@@ -100,4 +100,18 @@ export default {
 .spinner-border {
   color: var(--cn-primary) !important;
 }
+@media (max-width: 768px) {
+  .table th, .table td {
+    padding: 0.5rem;
+  }
+  
+  h5.mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+}
 </style>

@@ -15,16 +15,16 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('category'); // desayunos, almuerzos, cenas, snacks, etc.
+            $table->string('category');
             $table->float('calories');
             $table->float('protein')->nullable();
             $table->float('carbohydrates')->nullable();
             $table->float('fats')->nullable();
-            $table->text('ingredients')->nullable(); // Lista de ingredientes
-            $table->text('preparation')->nullable(); // Instrucciones de preparación
-            $table->integer('preparation_time')->nullable(); // Tiempo de preparación en minutos
-            $table->integer('servings')->nullable(); // Número de porciones
-            $table->string('difficulty')->nullable(); // fácil, intermedio, difícil
+            $table->text('ingredients')->nullable();
+            $table->text('preparation')->nullable();
+            $table->integer('preparation_time')->nullable();
+            $table->integer('servings')->nullable();
+            $table->string('difficulty')->nullable();
             $table->string('image_url')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

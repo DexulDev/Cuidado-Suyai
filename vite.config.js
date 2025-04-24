@@ -24,12 +24,12 @@ export default defineConfig({
             }
         }
     },
-    /* server: {
-        host: '', //<-- Llena las comillas con tu dirección IPv4 (Usa en terminal el comando ipconfig para encontrarla)
+    server: {
+        host: '192.168.0.112',
         cors: {
-            origin: ['http://'], //<-- Usa tu dirección IPv4
+            origin: ['http://192.168.0.112:8000'],
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             credentials: true
         },
-    }, */
+    },
 });

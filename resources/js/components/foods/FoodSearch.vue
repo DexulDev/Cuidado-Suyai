@@ -95,7 +95,6 @@ export default {
     }
   },
   mounted() {
-    // Realizar búsqueda inicial al cargar el componente (igual que ExerciseSearch)
     this.searchFoods();
   }
 };
@@ -128,7 +127,6 @@ export default {
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Badges de nutrición con colores correctos */
 .badge.bg-primary {
   background-color: var(--cn-primary) !important;
   color: var(--cn-white) !important;
@@ -286,7 +284,6 @@ export default {
   border: none;
 }
 
-/* Eliminar bordes redondeados de las tarjetas de resultados */
 .card, .card-body {
   border-radius: 0 !important;
 }

@@ -111,4 +111,67 @@ export default {
   font-size: 1.2rem;
   color: #3182ce;
 }
+@media (max-width: 768px) {
+  .exercise-list {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .card {
+    margin-bottom: 0.25rem !important;
+    box-shadow: none !important;
+  }
+  
+  .card-body {
+    padding: 0.5rem !important;
+  }
+  
+  h5.mb-3 {
+    margin-bottom: 0.25rem !important;
+    font-size: 1rem !important;
+  }
+
+  h5.card-title {
+    font-size: 0.95rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  p.card-text {
+    font-size: 0.85rem !important;
+    margin-bottom: 0.25rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  .badge {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+
+  .exercise-stats {
+    gap: 5px !important;
+  }
+
+  .stat-item {
+    font-size: 0.8rem !important;
+  }
+
+  .stat-item i {
+    font-size: 1rem !important;
+  }
+
+  .row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+
+  .col-md-8, .col-md-4 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
 </style>

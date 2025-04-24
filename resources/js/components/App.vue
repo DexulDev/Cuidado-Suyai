@@ -54,17 +54,19 @@ body {
 }
 
 .newen-container {
-  min-height: 100vh;
+  min-height: calc(80vh - 175px);
   display: flex;
   flex-direction: column;
+  margin-bottom: 2.5rem !important;
 }
 
 .search-container {
   max-width: 900px;
   margin: 0 auto;
+  flex-grow: 1;
+  width: 100%;
 }
 
-/* Sobrescribir los estilos de Bootstrap para usar nuestra paleta */
 .btn-primary {
   background-color: var(--cn-accent) !important;
   border-color: var(--cn-accent) !important;
@@ -86,12 +88,10 @@ body {
   color: var(--cn-white) !important;
 }
 
-/* Cambiar el fondo de los componentes de búsqueda */
 .tab-content {
   background-color: var(--cn-darklight) !important;
 }
 
-/* Asegurar que las badges de nutrición tengan colores correctos */
 .badge.bg-primary {
   background-color: var(--cn-primary) !important;
   color: var(--cn-white) !important;
@@ -107,7 +107,6 @@ body {
   color: var(--cn-white) !important;
 }
 
-/* Asegurar escala de grises y contraste */
 .card {
   background-color: #f5f2e2 !important;
 }
@@ -120,7 +119,6 @@ body {
   background-color: #fafafa !important;
 }
 
-/* Spinner consistente */
 .spinner-border {
   color: var(--cn-primary) !important;
 } 

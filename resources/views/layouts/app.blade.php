@@ -23,7 +23,6 @@
             --cn-white: #FFFFFF;
         }
         
-        
         body {
             font-family: 'Poppins', sans-serif !important;
             background: 
@@ -73,15 +72,18 @@
             justify-content: center;
             padding: 0.5rem 0;
             background-color: var(--cn-darklight) !important;
+            transition: all 0.3s ease;
         }
         
         .logo-header img {
             max-height: 70px;
+            transition: all 0.3s ease;
         }
         
         .logo-title {
             margin-left: 15px;
             text-align: left;
+            transition: all 0.3s ease;
         }
         
         .logo-title h1 {
@@ -89,12 +91,14 @@
             color: var(--cn-primary);
             font-weight: 600;
             font-size: 1.8rem;
+            transition: all 0.3s ease;
         }
         
         .logo-title p {
             margin: 0;
             color: var(--cn-dark);
             font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
         
         .card {
@@ -144,18 +148,15 @@
             border-color: var(--cn-primary) !important;
         }
         
-        /* Valores nutricionales */
         .nutrition-value {
             color: var(--cn-secondary);
             font-weight: bold;
         }
         
-        /* Spinner para carga */
         .spinner-border {
             color: var(--cn-primary) !important;
         }
         
-        /* Botones personalizados */
         .custom-btn {
             transition: all 0.3s ease;
             font-weight: 500 !important;
@@ -185,6 +186,94 @@
             background-color: var(--cn-primary) !important;
             color: var(--cn-white) !important;
         }
+        
+        @media (max-width: 768px) {
+            main.container {
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                margin-bottom: 0 !important;
+            }
+
+            .container {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+            }
+
+            .footer {
+                margin-top: 0.5rem !important;
+                padding: 0.5rem 0 !important;
+            }
+
+            h1 {
+                font-size: 1.25rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+
+            .row {
+                margin-bottom: 0 !important;
+            }
+
+            .logo-header {
+            padding: 0.5rem 0 !important;
+            margin-bottom: 0.75rem !important;
+            }
+
+            .logo-header img {
+                max-height: 40px !important;
+            }
+
+            .logo-title {
+                margin-left: 8px !important;
+            }
+
+            .logo-title h1 {
+                font-size: 1.2rem !important;
+            }
+
+            .custom-btn {
+                padding: 0.35rem 0.6rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            .custom-btn i {
+                font-size: 0.85rem !important;
+            }
+        
+            .btn {
+                min-height: 38px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            @media (max-width: 460px) {
+                .logo-header .container {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .logo-header .btn-container {
+                    margin-top: 0.5rem;
+                    align-self: flex-end;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                }
+
+                .custom-btn {
+                    margin-bottom: 0.25rem;
+                    width: auto;
+                }
+
+                .custom-btn.me-2 {
+                    margin-right: 0 !important;
+                }
+
+                .btn-text {
+                    display: inline-block;
+                }
+            }
+        }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -208,24 +297,24 @@
         </div>
     </div>
 
-    <main class="container py-4">
+    <main class="container py-2">
         @yield('content')
     </main>
 
-    <footer class="footer text-center text-muted">
+    <footer class="footer text-center text-muted py-2">
         <div class="container">
-            <div class="container">
-                <div class="small fw-bold" style="color: var(--cn-primary);">Educar Para la Vida</div>
+            <div class="d-flex align-items-center justify-content-center flex-wrap">
+                <div class="fw-bold me-3" style="color: var(--cn-primary); font-size: 0.9rem;">Educar Para la Vida</div>
                 
-                <div class="mt-3 mb-2">
-                    <a href="https://www.facebook.com/liahonapucon/?locale=es_LA" target="_blank" class="mx-2 text-decoration-none" aria-label="Facebook">
-                        <i class="bi bi-facebook" style="color: var(--cn-primary); font-size: 1.5rem;"></i>
+                <div class="d-flex align-items-center">
+                    <a href="https://www.facebook.com/liahonapucon/?locale=es_LA" target="_blank" class="mx-1 text-decoration-none" aria-label="Facebook">
+                        <i class="bi bi-facebook" style="color: var(--cn-primary); font-size: 1.2rem;"></i>
                     </a>
-                    <a href="https://www.instagram.com/liahona.pucon/?hl=es" target="_blank" class="mx-2 text-decoration-none" aria-label="Instagram">
-                        <i class="bi bi-instagram" style="color: var(--cn-primary); font-size: 1.5rem;"></i>
+                    <a href="https://www.instagram.com/liahona.pucon/?hl=es" target="_blank" class="mx-1 text-decoration-none" aria-label="Instagram">
+                        <i class="bi bi-instagram" style="color: var(--cn-primary); font-size: 1.2rem;"></i>
                     </a>
-                    <a href="https://www.colegiosliahonaepv.cl/" target="_blank" class="mx-2 text-decoration-none" aria-label="Sitio web">
-                        <i class="bi bi-globe" style="color: var(--cn-primary); font-size: 1.5rem;"></i>
+                    <a href="https://www.colegiosliahonaepv.cl/" target="_blank" class="mx-1 text-decoration-none" aria-label="Sitio web">
+                        <i class="bi bi-globe" style="color: var(--cn-primary); font-size: 1.2rem;"></i>
                     </a>
                 </div>
             </div>
@@ -238,7 +327,6 @@
     <!-- Script para corregir estilos -->
     <script>
         function enforceStyles() {
-            // Forzar estilos para los badges de nutrición
             document.querySelectorAll('.badge.bg-primary').forEach(badge => {
                 badge.style.backgroundColor = '#8B0000';
                 badge.style.color = '#FFFFFF';
@@ -254,14 +342,12 @@
                 badge.style.color = '#FFFFFF';
             });
             
-            // Forzar estilos de botones
             document.querySelectorAll('.btn-primary').forEach(btn => {
                 btn.style.backgroundColor = '#FFC107';
                 btn.style.borderColor = '#FFC107';
                 btn.style.color = '#000000';
             });
             
-            // Garantizar que los botones personalizados mantienen su estilo
             document.querySelectorAll('.custom-btn-primary').forEach(btn => {
                 btn.style.backgroundColor = '#FFC107';
                 btn.style.borderColor = '#FFC107';
@@ -275,15 +361,12 @@
             });
         }
         
-        // Ejecutar después de cargar el DOM y al terminar de cargar
         document.addEventListener('DOMContentLoaded', enforceStyles);
         window.addEventListener('load', enforceStyles);
         
-        // Observador para detectar cambios en el DOM
         const observer = new MutationObserver(enforceStyles);
         observer.observe(document.body, { childList: true, subtree: true });
         
-        // Aplicar periódicamente para asegurar consistencia
         setInterval(enforceStyles, 2000);
     </script>
 </body>

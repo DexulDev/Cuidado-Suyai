@@ -28,16 +28,13 @@ class Food extends Model
         'is_active'
     ];
 
-    // Alias para usar en el frontend
     protected $appends = ['proteins', 'carbs'];
 
-    // Getter para el alias 'proteins'
     public function getProteinsAttribute()
     {
         return $this->protein;
     }
 
-    // Getter para el alias 'carbs'
     public function getCarbsAttribute()
     {
         return $this->carbohydrates;
