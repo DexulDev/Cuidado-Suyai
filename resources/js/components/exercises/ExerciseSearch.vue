@@ -15,7 +15,6 @@
       </div>
       <div class="col-md-4">
         <select class="form-select" v-model="selectedMuscleGroup" @change="searchExercises">
-          <!-- Mantener el @change para búsqueda automática al cambiar categoría -->
           <option value="">Todos los grupos musculares</option>
           <option value="piernas">Piernas</option>
           <option value="brazos">Brazos</option>
