@@ -1,36 +1,44 @@
 # Cuidado-Newen
 
-----
+---
 
-**Cuidado-Newen** es un motor de búsqueda desarrollado en Laravel 12, enfocado en consultar datos ya existentes sobre alimentos y ejercicios almacenados en una base de datos estructurada. Fue creado como un regalo personal y funcional para mi novio, combinando tecnología, salud y amor 💙
+**Cuidado-Newen** is a search engine developed with Laravel 12, focused on querying existing data about food and exercises stored in a structured database. It was created as a personal and functional gift for my partner's school project, blending technology, health, and love 💙
 
-----
+---
 
-## 🧩 Funcionalidades
-- Búsqueda de recetas por nombre o categoría (macros, calorías, etc.).
-- Búsqueda de ejercicios según tipo, grupo muscular o dificultad.
-- UI ligera y rápida.
-- Datos pre-cargados para evitar dependencia externa.
-----
-## 🛠️ Tecnologías
+## 🧩 Features
+- Search for food recipes by category (breakfast, lunch, dinner, snacks, desserts).
+- Search for exercises by muscle group (legs, arms, chest, back, abs).
+- Lightweight and fast UI.
+- Preloaded data to avoid external dependencies.
+
+---
+
+## 🛠️ Technologies
 - Laravel 12
 - Vue 3
 - MySQL
 - Blade
 - Bootstrap 5
-----
-## 🚀 Instalación
-1. Clona este repositorio.
-2. Ejecuta `composer install`.
-3. Copia el archivo `.env.example` a `.env` y configura tu entorno.
-4. Corre las migraciones con `php artisan migrate`.
-5. Carga la base de datos con los datos de ejemplo con `php artisan db:seed --class=ExerciseSeeder` y `php artisan db:seed --class=FoodSeeder`.
-----
-6. Inicia el servidor con `php artisan serve`. Si vas a usarlo de manera local con tu red para que los demás puedan entrar usa primero `ipconfig` y luego en el `php artisan serve` agrega `--host=TuIPv4 --port=8000` (el puerto siempre es 8000) de manera que quede algo como `php artisan serve --host=XXX.XXX.X.XXX --port=8000` donde las 'X' son numeros.
-----
-7. Inicia el servidor de estilos usando `npm run dev`. Si vas a usarlo igual de manera local con la red par aque los demás entren, descomenta las lineas del archivo vite.config.js
 
 ---
 
-### 💌 Dedicado a
-Un regalo de código y cariño, hecho para mi novio. Programar para ti también es compartir lo que amo hacer 💙
+## 🚀 Installation
+1. Clone this repository.
+2. Run `composer install`.
+3. Copy the `.env.example` file to `.env` and configure your environment variables.
+4. Run the migrations with `php artisan migrate`.
+5. Seed the database with example data using `php artisan db:seed --class=ExerciseSeeder` and `php artisan db:seed --class=FoodSeeder`.
+6. Start the server with `php artisan serve`.  
+   If you want to access it locally on your network, first run `ipconfig` to get your IPv4 address, then run the server with:  
+   `php artisan serve --host=YourIPv4Address --port=8000`  
+   (The port must always be 8000. Replace `YourIPv4Address` with the actual numbers shown in `ipconfig`.)
+
+7. Start the frontend development server with `npm run dev`.  
+   If you want to expose it to others on your local network, make sure to uncomment the corresponding lines in the `vite.config.js` file.
+
+---
+
+### 💌 Dedicated to
+A gift of code and affection, made for my boyfriend.  
+Programming for you is also sharing what I love to do 💙

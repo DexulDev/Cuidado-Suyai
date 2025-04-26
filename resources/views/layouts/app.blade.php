@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Favicon del Liahona -->
+    <link rel="icon" href="https://www.google.com/s2/favicons?sz=32&domain_url=https%3A%2F%2Fwww.colegiosliahonaepv.cl%2F" type="image/png">
     <!-- Estilos personalizados -->
     <style>
         :root {
@@ -324,7 +326,6 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Script para corregir estilos -->
     <script>
         function enforceStyles() {
             document.querySelectorAll('.badge.bg-primary').forEach(badge => {

@@ -1,7 +1,6 @@
 <template>
   <div class="food-search card shadow-sm">
       <div class="row g-3">
-        <!-- Input de búsqueda (sin cambios) -->
         <div class="col-md-8">
           <div class="input-group">
             <span class="input-group-text bg-white border-end-0">
@@ -16,7 +15,6 @@
             />
           </div>
         </div>
-        <!-- Select de categoría con @change para búsqueda automática -->
         <div class="col-md-4">
           <select class="form-select" v-model="selectedCategory" @change="searchFoods">
             <option value="">Todas las categorías</option>
@@ -27,7 +25,6 @@
             <option value="postres">Postres</option>
           </select>
         </div>
-        <!-- Botón de búsqueda (sin cambios) -->
         <div class="col-12">
           <button @click="searchFoods" class="btn btn-primary">
             <i class="bi bi-search me-2"></i>Buscar
