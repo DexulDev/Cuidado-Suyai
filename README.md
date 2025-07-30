@@ -1,8 +1,8 @@
-# Cuidado-Newen
+# Cuidado-Suyai
 
 ---
 
-**Cuidado-Newen** is a search engine developed with Laravel 12, focused on querying existing data about food and exercises stored in a structured database. It was created as a personal and functional gift for my partner's school project, blending technology, health, and love 💙
+**Cuidado-Suyai** is a search engine developed with Laravel 12, focused on querying existing data about food and exercises stored in a structured database. It was created as a personal and functional gift for my partner's school project, blending technology, health, and love 💙
 
 ---
 
