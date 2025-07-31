@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Application Name
@@ -122,5 +121,17 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Password
+    |--------------------------------------------------------------------------
+    |
+    | This value is the password for the admin panel. You can change this
+    | from the admin interface after first login.
+    |
+    */
+
+    'admin_password' => env('ADMIN_PASSWORD', 'admin'),
 
 ];

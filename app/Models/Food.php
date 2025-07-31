@@ -15,7 +15,7 @@ class Food extends Model
         'name',
         'description',
         'category',
-        'calories',
+        'calories_per_serving',
         'protein',
         'carbohydrates',
         'fats',
@@ -28,7 +28,27 @@ class Food extends Model
         'is_active'
     ];
 
-    protected $appends = ['proteins', 'carbs'];
+    protected $casts = [
+        'is_active' => 'boolean',
+        'calories_per_serving' => 'integer',
+        'protein' => 'integer',
+        'carbohydrates' => 'integer',
+        'fats' => 'integer',
+        'preparation_time' => 'integer',
+        'servings' => 'integer',
+    ];
+
+    // Scope para comidas activas
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    // Accessors para compatibilidad con el frontend
+    public function getCaloriesAttribute()
+    {
+        return $this->calories_per_serving;
+    }
 
     public function getProteinsAttribute()
     {
@@ -38,5 +58,37 @@ class Food extends Model
     public function getCarbsAttribute()
     {
         return $this->carbohydrates;
+    }
+    
+    // Método para obtener la URL de imagen usando el storage de Laravel
+    public function getImagePath()
+    {
+        if (!$this->attributes['image_url']) {
+            return null;
+        }
+        
+        if (str_starts_with($this->attributes['image_url'], 'http')) {
+            return $this->attributes['image_url'];
+        }
+        
+        return asset('storage/foods/' . $this->attributes['image_url']);
+    }
+
+    // Accessor usando el sistema de Laravel Storage
+    protected function imageUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value) {
+                if (!$value) {
+                    return null;
+                }
+                
+                if (str_starts_with($value, 'http')) {
+                    return $value;
+                }
+                
+                return asset('storage/foods/' . $value);
+            }
+        );
     }
 }

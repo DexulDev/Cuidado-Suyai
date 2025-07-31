@@ -21,6 +21,7 @@
           <option value="pecho">Pecho</option>
           <option value="espalda">Espalda</option>
           <option value="abdomen">Abdomen</option>
+          <option value="todo el cuerpo">Todo el cuerpo</option>
         </select>
       </div>
       <div class="col-12">
@@ -41,34 +42,54 @@
         <p class="mt-3">No se encontraron ejercicios. Intenta con otra búsqueda.</p>
       </div>
       
-      <transition-group name="fade" tag="div" class="row row-cols-1 g-4">
+      <div v-else class="row row-cols-1 row-cols-md-2 g-4">
         <div v-for="exercise in exercises" :key="exercise.id" class="col">
-          <div class="card exercise-card">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start">
-                <h5 class="card-title">{{ exercise.name }}</h5>
-                <span class="badge bg-category">{{ exercise.muscle_group }}</span>
+          <div class="card exercise-card h-100">
+            <div class="row g-0 h-100">
+              <div class="col-md-4" v-if="exercise.image_path || exercise.image_url">
+                <div class="exercise-image-container">
+                  <img :src="exercise.image_path || exercise.image_url" 
+                       :alt="exercise.name"
+                       class="img-fluid rounded-start">
+                </div>
               </div>
-              <p class="card-text">{{ exercise.description }}</p>
-              
-              <div class="exercise-details">
-                <div class="exercise-detail">
-                  <i class="bi bi-stopwatch"></i>
-                  <span>{{ exercise.duration }} min</span>
-                </div>
-                <div class="exercise-detail">
-                  <i class="bi bi-lightning-charge"></i>
-                  <span>{{ exercise.intensity }}</span>
-                </div>
-                <div class="exercise-detail">
-                  <i class="bi bi-fire"></i>
-                  <span>~{{ exercise.calories_burned }} cal</span>
+              <div :class="(exercise.image_path || exercise.image_url) ? 'col-md-8' : 'col-12'">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ exercise.name }}</h5>
+                    <div>
+                      <span class="badge bg-category me-1" v-if="exercise.muscle_group">{{ exercise.muscle_group }}</span>
+                      <span class="badge" :class="getDifficultyBadgeClass(exercise.difficulty)">
+                        {{ exercise.difficulty }}
+                      </span>
+                    </div>
+                  </div>
+                  <p class="card-text">{{ truncateText(exercise.description, 120) }}</p>
+                  
+                  <div class="exercise-details mt-auto">
+                    <div class="exercise-detail" v-if="exercise.duration">
+                      <i class="bi bi-stopwatch"></i>
+                      <span>{{ exercise.duration }} min</span>
+                    </div>
+                    <div class="exercise-detail" v-if="exercise.intensity">
+                      <i class="bi bi-lightning-charge"></i>
+                      <span>{{ exercise.intensity }}</span>
+                    </div>
+                    <div class="exercise-detail" v-if="exercise.calories_burned">
+                      <i class="bi bi-fire"></i>
+                      <span>~{{ exercise.calories_burned }} cal</span>
+                    </div>
+                    <div class="exercise-detail" v-if="exercise.equipment">
+                      <i class="bi bi-tools"></i>
+                      <span>{{ exercise.equipment }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </transition-group>
+      </div>
     </div>
   </div>
 </template>
@@ -104,6 +125,18 @@ export default {
         console.error('Error buscando ejercicios:', error);
         this.loading = false;
       });
+    },
+    truncateText(text, length) {
+      if (!text) return '';
+      return text.length > length ? text.substring(0, length) + '...' : text;
+    },
+    getDifficultyBadgeClass(difficulty) {
+      switch (difficulty) {
+        case 'principiante': return 'bg-success';
+        case 'intermedio': return 'bg-warning text-dark';
+        case 'avanzado': return 'bg-danger';
+        default: return 'bg-secondary';
+      }
     }
   },
   mounted() {
@@ -210,5 +243,20 @@ export default {
 
 h5.card-title {
   color: var(--cn-primary);
+}
+
+.exercise-image-container {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--cn-light);
+  overflow: hidden;
+}
+
+.exercise-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>

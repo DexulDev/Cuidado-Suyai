@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Exercise;
+use App\Models\Search;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ExerciseController extends Controller
 {
@@ -12,48 +14,81 @@ class ExerciseController extends Controller
         return view('exercises.index');
     }
 
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
-        $muscleGroup = $request->input('muscle_group');
-        $difficulty = $request->input('difficulty');
-        
-        $exercises = Exercise::when($query, function($q) use ($query) {
-                        return $q->where('name', 'LIKE', "%{$query}%");
-                    })
-                    ->when($muscleGroup, function($q) use ($muscleGroup) {
-                        return $q->where('muscle_group', $muscleGroup);
-                    })
-                    ->when($difficulty, function($q) use ($difficulty) {
-                        return $q->where('difficulty', $difficulty);
-                    })
-                    ->get();
-        
-        return response()->json($exercises);
-    }
-
     public function apiList()
     {
-        $exercises = Exercise::all();
-        return response()->json($exercises);
+        $exercises = Exercise::active()->get();
+        
+        // Asegurar que las URLs de imagen estén disponibles
+        $exercises->each(function($exercise) {
+            $exercise->image_path = $exercise->getImagePath();
+        });
+        
+        return $exercises;
     }
 
-    public function create()
+    public function search(Request $request)
     {
-        return view('exercises.create');
+        $query = Exercise::active();
+        
+        if ($request->filled('query')) {
+            $searchTerm = $request->query('query');
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('description', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('equipment', 'like', '%' . $searchTerm . '%');
+            });
+        }
+        
+        if ($request->filled('category')) {
+            $query->where('category', $request->query('category'));
+        }
+        
+        if ($request->filled('muscle_group')) {
+            $query->where('muscle_group', $request->query('muscle_group'));
+        }
+        
+        if ($request->filled('difficulty')) {
+            $query->where('difficulty', $request->query('difficulty'));
+        }
+        
+        $results = $query->orderBy('name')->get();
+        
+        // Asegurar que las URLs de imagen estén disponibles
+        $results->each(function($exercise) {
+            $exercise->image_path = $exercise->getImagePath();
+        });
+        
+        // Save search to database
+        $this->saveSearch($request, 'exercise', $results->count());
+        
+        return $results;
     }
 
-    public function store(Request $request)
+    private function saveSearch(Request $request, string $type, int $resultsCount)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'muscle_group' => 'required|string',
-            'difficulty' => 'required|in:principiante,intermedio,avanzado',
-            'duration' => 'required|integer',
-            'intensity' => 'required|string',
-        ]);
+        try {
+            $filters = [];
+            
+            // Collect all search parameters except query and main filters
+            foreach ($request->all() as $key => $value) {
+                if (!in_array($key, ['query', 'category', 'muscle_group', 'difficulty']) && !empty($value)) {
+                    $filters[$key] = $value;
+                }
+            }
 
-        Exercise::create($request->all());
-        return redirect()->route('exercises.index')->with('success', 'Ejercicio creado exitosamente.');
+            Search::create([
+                'search_type' => $type,
+                'query' => $request->query('query'),
+                'category' => $request->query('category'),
+                'difficulty' => $request->query('difficulty'),
+                'results_count' => $resultsCount,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'filters' => !empty($filters) ? $filters : null
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't break the search functionality
+            Log::error('Failed to save search: ' . $e->getMessage());
+        }
     }
 }

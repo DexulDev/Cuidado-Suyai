@@ -1,5 +1,5 @@
 <template>
-  <div class="newen-container">
+  <div class="suyai-container">
     <div class="container">
       <div class="search-container">
         <div class="tab-content p-4 rounded-3 shadow-sm bg-white" id="searchTabsContent">
@@ -53,7 +53,7 @@ body {
   color: var(--cn-dark) !important;
 }
 
-.newen-container {
+.suyai-container {
   min-height: calc(80vh - 175px);
   display: flex;
   flex-direction: column;

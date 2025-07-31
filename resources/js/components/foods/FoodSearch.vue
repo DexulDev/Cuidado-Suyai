@@ -18,11 +18,11 @@
         <div class="col-md-4">
           <select class="form-select" v-model="selectedCategory" @change="searchFoods">
             <option value="">Todas las categorías</option>
-            <option value="desayunos">Desayunos</option>
-            <option value="almuerzos">Almuerzos</option>
-            <option value="cenas">Cenas</option>
-            <option value="snacks">Snacks</option>
-            <option value="postres">Postres</option>
+            <option value="desayuno">Desayuno</option>
+            <option value="almuerzo">Almuerzo</option>
+            <option value="cena">Cena</option>
+            <option value="snack">Snack</option>
+            <option value="postre">Postre</option>
           </select>
         </div>
         <div class="col-12">
@@ -43,21 +43,68 @@
       <div class="mt-4" v-else-if="foods.length">
         <div class="row row-cols-1 row-cols-md-2 g-4">
           <div v-for="food in foods" :key="food.id" class="col">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title">{{ food.name }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ food.calories }} calorías</h6>
-                <p class="card-text">
-                  <span class="badge bg-primary me-2">Proteínas: {{ food.protein }}g</span>
-                  <span class="badge bg-success me-2">Carbohidratos: {{ food.carbohydrates }}g</span>
-                  <span class="badge bg-warning">Grasas: {{ food.fats }}g</span>
-                </p>
+            <div class="card h-100 recipe-card">
+              <div class="row g-0 h-100">
+                <div class="col-md-4">
+                  <div class="recipe-image-container">
+                    <img v-if="food.image_path || food.image_url" 
+                         :src="food.image_path || food.image_url" 
+                         :alt="food.name"
+                         class="img-fluid rounded-start">
+                    <div v-else class="recipe-placeholder">
+                      <i class="bi bi-image"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body d-flex flex-column h-100">
+                    <div>
+                      <h5 class="card-title">{{ food.name }}</h5>
+                      <div class="recipe-meta mb-2">
+                        <span class="badge bg-category me-1">{{ food.category }}</span>
+                        <span class="badge bg-warning">{{ food.difficulty }}</span>
+                      </div>
+                      <p class="card-text small">{{ truncateText(food.description, 100) }}</p>
+                    </div>
+                    
+                    <div class="mt-auto">
+                      <div class="nutrition-info">
+                        <div class="nutrition-item" v-if="food.calories_per_serving">
+                          <span class="nutrition-value">{{ food.calories_per_serving }}</span>
+                          <span class="nutrition-label">kcal</span>
+                        </div>
+                        <div class="nutrition-item" v-if="food.protein">
+                          <span class="nutrition-value">{{ food.protein }}g</span>
+                          <span class="nutrition-label">Prot.</span>
+                        </div>
+                        <div class="nutrition-item" v-if="food.carbohydrates">
+                          <span class="nutrition-value">{{ food.carbohydrates }}g</span>
+                          <span class="nutrition-label">Carb.</span>
+                        </div>
+                        <div class="nutrition-item" v-if="food.fats">
+                          <span class="nutrition-value">{{ food.fats }}g</span>
+                          <span class="nutrition-label">Grasas</span>
+                        </div>
+                      </div>
+                      
+                      <div class="recipe-meta mt-2" v-if="food.preparation_time">
+                        <div class="recipe-meta-item">
+                          <i class="bi bi-clock"></i>
+                          <span>{{ food.preparation_time }} min</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <p v-else class="text-center mt-4">No se encontraron recetas.</p>
+      <div v-else class="text-center mt-4 py-5">
+        <i class="bi bi-emoji-frown fs-1 text-muted"></i>
+        <p class="mt-3">No se encontraron recetas. Intenta con otra búsqueda.</p>
+      </div>
     </div>  
 </template>
 
@@ -89,6 +136,10 @@ export default {
         console.error('Error buscando recetas:', error);
         this.loading = false;
       });
+    },
+    truncateText(text, length) {
+      if (!text) return '';
+      return text.length > length ? text.substring(0, length) + '...' : text;
     }
   },
   mounted() {
@@ -96,6 +147,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
 :root {
   --cn-primary: #8B0000;
@@ -140,12 +192,12 @@ export default {
 }
 
 .recipe-image-container {
-  height: 100%;
-  min-height: 180px;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: var(--cn-light);
+  overflow: hidden;
 }
 
 .recipe-image-container img {
