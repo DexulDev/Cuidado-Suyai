@@ -2,43 +2,44 @@
 
 ---
 
-**Cuidado-Suyai** is a search engine developed with Laravel 12, focused on querying existing data about food and exercises stored in a structured database. It was created as a personal and functional gift for my partner's school project, blending technology, health, and love 💙
+**Cuidado-Suyai** is a search engine built with Laravel 12, designed to query data about food and exercises stored in a structured database. It was created as a personal, functional, and heartfelt gift for someone very special in my life, blending technology, health, and genuine care. 💙
 
 ---
 
 ## 🧩 Features
 - Search for food recipes by category (breakfast, lunch, dinner, snacks, desserts).
 - Search for exercises by muscle group (legs, arms, chest, back, abs).
-- Lightweight and fast UI.
+- Lightweight and fast interface.
 - Preloaded data to avoid external dependencies.
 
 ---
 
 ## 🛠️ Technologies
-- Laravel 12
-- Vue 3
-- MySQL
-- Blade
-- Bootstrap 5
+- Laravel 12  
+- Vue 3  
+- MySQL  
+- Blade  
+- Bootstrap 5  
 
 ---
 
 ## 🚀 Installation
-1. Clone this repository.
-2. Run `composer install`.
-3. Copy the `.env.example` file to `.env` and configure your environment variables.
-4. Run the migrations with `php artisan migrate`.
-5. Seed the database with example data using `php artisan db:seed --class=ExerciseSeeder` and `php artisan db:seed --class=FoodSeeder`.
+1. Clone this repository.  
+2. Run `composer install`.  
+3. Copy `.env.example` to `.env` and configure your environment variables.  
+4. Run migrations with `php artisan migrate`.  
+5. Seed example data using `php artisan db:seed --class=ExerciseSeeder` and `php artisan db:seed --class=FoodSeeder`.  
 6. Start the server with `php artisan serve`.  
-   If you want to access it locally on your network, first run `ipconfig` to get your IPv4 address, then run the server with:  
+   To access it on your local network, first run `ipconfig` to get your IPv4 address, then run:  
    `php artisan serve --host=YourIPv4Address --port=8000`  
-   (The port must always be 8000. Replace `YourIPv4Address` with the actual numbers shown in `ipconfig`.)
+   (The port must always be 8000; replace `YourIPv4Address` with the actual address from `ipconfig`).  
 
 7. Start the frontend development server with `npm run dev`.  
-   If you want to expose it to others on your local network, make sure to uncomment the corresponding lines in the `vite.config.js` file.
+   To expose it on your local network, make sure to uncomment the necessary lines in `vite.config.js`.
 
 ---
 
-### 💌 Dedicated to
-A gift of code and affection, made for my boyfriend.  
-Programming for you is also sharing what I love to do 💙
+### 💌 For you, with all my affection  
+This project is more than code; it’s a piece of me I’m giving you. Programming for someone special is sharing my world, my passions, and also my care for you. I always wanted this tool to accompany you on your journey, with the same dedication I put into building it.
+
+---
