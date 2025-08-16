@@ -26,8 +26,6 @@ import UISystem from './components/ui-system';
 window.showNotification = window.showNotification || function(message, type = 'success') {
   if (window.emitToast) {
     window.emitToast(message, type);
-  } else {
-    console.log(message);
   }
 };
 

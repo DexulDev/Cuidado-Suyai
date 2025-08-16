@@ -9,9 +9,9 @@ use App\Models\FoodImage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
@@ -209,7 +209,7 @@ class AdminController extends Controller
             'carbohydrates' => 'nullable|integer',
             'fats' => 'nullable|integer',
             'preparation' => 'nullable|string',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
         $data = $request->except('images');
@@ -244,6 +244,15 @@ class AdminController extends Controller
 
     public function updateFood(Request $request, Food $food)
     {
+        // Debug: Log de información de la request
+        Log::info('updateFood called', [
+            'food_id' => $food->id,
+            'has_new_images' => $request->hasFile('new_images'),
+            'new_images_count' => $request->file('new_images') ? count($request->file('new_images')) : 0,
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size')
+        ]);
+
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
@@ -256,7 +265,7 @@ class AdminController extends Controller
             'carbohydrates' => 'nullable|integer',
             'fats' => 'nullable|integer',
             'preparation' => 'nullable|string',
-            'new_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'new_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'delete_images' => 'array',
             'delete_images.*' => 'integer|exists:food_images,id',
             'image_order' => 'nullable|string' // comma separated IDs
@@ -353,7 +362,7 @@ class AdminController extends Controller
             'equipment' => 'nullable|string',
             'muscle_group' => 'nullable|string',
             'intensity' => 'nullable|string',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
         $data = $request->except('images');
@@ -546,7 +555,7 @@ class AdminController extends Controller
             'equipment' => 'nullable|string',
             'muscle_group' => 'nullable|string',
             'intensity' => 'nullable|string',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'nullable|integer'
         ]);

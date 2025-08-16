@@ -16,7 +16,7 @@
               <div class="row g-3">
                 <div class="col-md-3">
                   <label class="form-label small fw-medium">Tipo de búsqueda</label>
-                  <select v-model="filters.searchType" class="form-select form-select-sm" @change="fetchSearches">
+                  <select v-model="filters.searchType" class="form-select form-select-sm" @change="loadData">
                     <option value="">Todos los tipos</option>
                     <option value="food">Comidas</option>
                     <option value="exercise">Ejercicios</option>
@@ -24,7 +24,7 @@
                 </div>
                 <div class="col-md-3">
                   <label class="form-label small fw-medium">Categoría</label>
-                  <select v-model="filters.category" class="form-select form-select-sm" @change="fetchSearches">
+                  <select v-model="filters.category" class="form-select form-select-sm" @change="loadData">
                     <option value="">Todas las categorías</option>
                     <option v-for="category in categories" :key="category" :value="category">
                       {{ category }}
@@ -33,7 +33,7 @@
                 </div>
                 <div class="col-md-3">
                   <label class="form-label small fw-medium">Período</label>
-                  <select v-model="filters.period" class="form-select form-select-sm" @change="fetchSearches">
+                  <select v-model="filters.period" class="form-select form-select-sm" @change="loadData">
                     <option value="all">Todo el tiempo</option>
                     <option value="today">Hoy</option>
                     <option value="week">Esta semana</option>
@@ -42,7 +42,7 @@
                 </div>
                 <div class="col-md-3">
                   <label class="form-label small fw-medium">Ordenar por</label>
-                  <select v-model="filters.sort" class="form-select form-select-sm" @change="fetchSearches">
+                  <select v-model="filters.sort" class="form-select form-select-sm" @change="loadData">
                     <option value="newest">Más recientes</option>
                     <option value="oldest">Más antiguos</option>
                     <option value="popular">Más populares</option>
@@ -75,13 +75,6 @@
 
             <!-- Popular Searches Chart -->
             <div class="chart-container mb-4 p-3 rounded shadow-sm">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-medium m-0">Términos de búsqueda más populares</h6>
-                <div class="btn-group">
-                  <button type="button" class="btn btn-sm" :class="chartView === 'food' ? 'btn-cn-primary' : 'btn-outline-secondary'" @click="chartView = 'food'">Comidas</button>
-                  <button type="button" class="btn btn-sm" :class="chartView === 'exercise' ? 'btn-cn-primary' : 'btn-outline-secondary'" @click="chartView = 'exercise'">Ejercicios</button>
-                </div>
-              </div>
               <div class="chart-body">
                 <div class="row g-2">
                   <div v-for="term in popularTerms" :key="term.query" class="col-6 col-md-4 col-lg-3">
@@ -259,7 +252,7 @@ export default {
     }
   },
   methods: {
-    async fetchSearches() {
+    async loadData() {
       this.loading = true;
       try {
         const response = await fetch(`/admin/api/searches?${this.getQueryString()}`, {
@@ -285,6 +278,17 @@ export default {
         this.loading = false;
       }
     },
+
+    // Método alternativo si prefieres mantener fetchSearches
+    async fetchSearches() {
+      return this.loadData();
+    },
+
+    // Nuevo método para cambiar la vista del gráfico y recargar datos
+    changeChartView(view) {
+      this.chartView = view;
+      this.loadData();
+    },
     
     getQueryString() {
       const query = new URLSearchParams();
@@ -293,13 +297,17 @@ export default {
           query.append(key, value);
         }
       }
+      // Agregar chartView al query string
+      if (this.chartView) {
+        query.append('chartView', this.chartView);
+      }
       return query.toString();
     },
     
     changePage(page) {
       if (page < 1 || page > this.pagination.total_pages) return;
       this.filters.page = page;
-      this.fetchSearches();
+      this.loadData();
     },
     
     formatDate(dateString) {
@@ -345,7 +353,7 @@ export default {
     },
     
     open() {
-      this.fetchSearches();
+      this.loadData();
       const bootstrap = window.bootstrap;
       
       // Solución compatible con múltiples versiones de Bootstrap

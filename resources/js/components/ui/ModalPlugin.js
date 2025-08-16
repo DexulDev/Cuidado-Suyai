@@ -23,11 +23,8 @@ export default {
           
           // Escuchar eventos de modal
           el.addEventListener('shown.bs.modal', function() {
-            // Cuando el modal se muestra, eliminar aria-hidden
-            if (el.getAttribute('aria-hidden') === 'true') {
-              el.removeAttribute('aria-hidden');
-              console.log('[Vue Modal Plugin] Eliminando aria-hidden en modal mostrado');
-            }
+            // Eliminar aria-hidden cuando el modal esté completamente mostrado
+            el.removeAttribute('aria-hidden');
             
             // Asegurar que el foco vaya a un lugar adecuado
             const closeButton = el.querySelector('.btn-close');
@@ -86,7 +83,6 @@ export default {
             if (element.getAttribute('aria-hidden') === 'true' && 
                 element.classList.contains('show')) {
               element.removeAttribute('aria-hidden');
-              console.log('[Vue Modal Plugin] Corrigiendo aria-hidden después de show()');
             }
           }, 50);
           
@@ -96,12 +92,14 @@ export default {
         return modalInstance;
       };
       
-      // Copiar propiedades estáticas
+      // Copiar propiedades estáticas INCLUYENDO getInstance
       Object.keys(originalModalConstructor).forEach(key => {
         window.bootstrap.Modal[key] = originalModalConstructor[key];
       });
       
-      console.log('[Vue Modal Plugin] Bootstrap Modal parchado correctamente');
+      // Asegurar que getInstance esté disponible
+      window.bootstrap.Modal.getInstance = originalModalConstructor.getInstance;
+      window.bootstrap.Modal.getOrCreateInstance = originalModalConstructor.getOrCreateInstance;
     }
   }
 };

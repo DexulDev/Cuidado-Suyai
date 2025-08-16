@@ -127,8 +127,12 @@
 .admin-modal .modal-backdrop,
 .modal-backdrop.admin-backdrop {
     display: block !important;
-    z-index: 1040 !important;
+    z-index: 9998 !important; /* Justo debajo del modal del admin */
     background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.admin-modal {
+    z-index: 9999 !important; /* Asegurar que esté por encima del backdrop */
 }
 
 /* ===== BODY SIN SCROLL BLOQUEADO ===== */

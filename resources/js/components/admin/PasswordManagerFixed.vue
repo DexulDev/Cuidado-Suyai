@@ -378,7 +378,6 @@ export default {
       this.formErrors = [];
       
       try {
-        console.log('Enviando contraseña al servidor');
         
         // Crear un formulario HTML para enviar usando el método POST tradicional
         const form = document.createElement('form');

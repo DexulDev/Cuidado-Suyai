@@ -151,30 +151,36 @@
         
         <!-- Sugerencias de categorías -->
         <p class="text-muted mb-3">¿O prueba con estas opciones?</p>
-        <div class="recommendations-grid mt-4" style="max-width: 500px;">
-          <div class="recommendation-card" @click="searchByCategory('desayuno')">
+        <div class="recommendations-grid mt-4" style="max-width: 600px;">
+          <div v-if="selectedCategory !== 'desayuno'" class="recommendation-card" @click="searchByCategory('desayuno')">
             <div class="recommendation-icon">
               <i class="bi bi-cup-hot"></i>
             </div>
             <span class="recommendation-label">Desayuno</span>
           </div>
-          <div class="recommendation-card" @click="searchByCategory('almuerzo')">
+          <div v-if="selectedCategory !== 'almuerzo'" class="recommendation-card" @click="searchByCategory('almuerzo')">
             <div class="recommendation-icon">
               <i class="bi bi-egg-fried"></i>
             </div>
             <span class="recommendation-label">Almuerzo</span>
           </div>
-          <div class="recommendation-card" @click="searchByCategory('postre')">
+          <div v-if="selectedCategory !== 'postre'" class="recommendation-card" @click="searchByCategory('postre')">
             <div class="recommendation-icon">
               <i class="bi bi-cake"></i>
             </div>
             <span class="recommendation-label">Postre</span>
           </div>
-          <div class="recommendation-card" @click="searchByCategory('cena')">
+          <div v-if="selectedCategory !== 'cena'" class="recommendation-card" @click="searchByCategory('cena')">
             <div class="recommendation-icon">
               <i class="bi bi-moon"></i>
             </div>
             <span class="recommendation-label">Cena</span>
+          </div>
+          <div v-if="selectedCategory !== 'snack'" class="recommendation-card" @click="searchByCategory('snack')">
+            <div class="recommendation-icon">
+              <i class="bi bi-cup-straw"></i>
+            </div>
+            <span class="recommendation-label">Snack</span>
           </div>
         </div>
       </div>

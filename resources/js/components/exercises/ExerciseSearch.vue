@@ -91,32 +91,44 @@
         <i class="bi bi-emoji-frown fs-1 text-muted"></i>
         <p class="mt-3 mb-4">No se encontraron ejercicios. Intenta con otra búsqueda.</p>
         
-        <!-- Sugerencias de categorías -->
+        <!-- Sugerencias de categorías (todas excepto la actual) -->
         <p class="text-muted mb-3">¿O prueba con estas opciones?</p>
-        <div class="recommendations-grid mt-4" style="max-width: 400px;">
-          <div class="recommendation-card" @click="searchByMuscleGroup('piernas')">
+        <div class="recommendations-grid mt-4" style="max-width: 600px;">
+          <div v-if="selectedMuscleGroup !== 'piernas'" class="recommendation-card" @click="searchByMuscleGroup('piernas')">
             <div class="recommendation-icon">
               <i class="bi bi-person-walking"></i>
             </div>
             <span class="recommendation-label">Piernas</span>
           </div>
-          <div class="recommendation-card" @click="searchByMuscleGroup('brazos')">
+          <div v-if="selectedMuscleGroup !== 'brazos'" class="recommendation-card" @click="searchByMuscleGroup('brazos')">
             <div class="recommendation-icon">
               <i class="bi bi-person-arms-up"></i>
             </div>
             <span class="recommendation-label">Brazos</span>
           </div>
-          <div class="recommendation-card" @click="searchByMuscleGroup('abdomen')">
+          <div v-if="selectedMuscleGroup !== 'abdomen'" class="recommendation-card" @click="searchByMuscleGroup('abdomen')">
             <div class="recommendation-icon">
               <i class="bi bi-person-standing"></i>
             </div>
             <span class="recommendation-label">Abdomen</span>
           </div>
-          <div class="recommendation-card" @click="searchByMuscleGroup('todo el cuerpo')">
+          <div v-if="selectedMuscleGroup !== 'todo el cuerpo'" class="recommendation-card" @click="searchByMuscleGroup('todo el cuerpo')">
             <div class="recommendation-icon">
               <i class="bi bi-person-check"></i>
             </div>
             <span class="recommendation-label">Todo el cuerpo</span>
+          </div>
+          <div v-if="selectedMuscleGroup !== 'pecho'" class="recommendation-card" @click="searchByMuscleGroup('pecho')">
+            <div class="recommendation-icon">
+              <i class="bi bi-heart-pulse"></i>
+            </div>
+            <span class="recommendation-label">Pecho</span>
+          </div>
+          <div v-if="selectedMuscleGroup !== 'espalda'" class="recommendation-card" @click="searchByMuscleGroup('espalda')">
+            <div class="recommendation-icon">
+              <i class="bi bi-person-standing-dress"></i>
+            </div>
+            <span class="recommendation-label">Espalda</span>
           </div>
         </div>
       </div>

@@ -219,20 +219,36 @@
       </div>
     </div>
 
-    <!-- Search Telemetry Modal -->
-    <search-telemetry ref="searchTelemetry" :csrf="csrf"></search-telemetry>
+    <!-- Search Analytics Modal -->
+    <SearchAnalyticsModal 
+      :show="showSearchAnalytics" 
+      @hide="showSearchAnalytics = false"
+      :api-route="routes.searchAnalyticsJson"
+    />
   </div>
 </template>
 
 <script>
-import SearchTelemetry from './SearchTelemetry.vue';
+import SearchAnalyticsModal from './SearchAnalyticsModal.vue';
 export default {
   components: {
-    SearchTelemetry
+    SearchAnalyticsModal
   },
   props: { initialFoods: Array, initialExercises: Array, routes: Object, csrf: String },
   data() {
-    return { foods: this.initialFoods || [], exercises: this.initialExercises || [], foodForm: null, exerciseForm: null, newImages: [], deletedImages: new Set(), dragSource: null, saving:false, newExerciseImages:[], deletedExerciseImages: new Set() };
+    return { 
+      foods: this.initialFoods || [], 
+      exercises: this.initialExercises || [], 
+      foodForm: null, 
+      exerciseForm: null, 
+      newImages: [], 
+      deletedImages: new Set(), 
+      dragSource: null, 
+      saving: false, 
+      newExerciseImages: [], 
+      deletedExerciseImages: new Set(),
+      showSearchAnalytics: false
+    };
   },
   computed: {
     statCards() { return [ { label:'Comidas', value:this.foods.length, icon:'bi bi-egg-fried' }, { label:'Ejercicios', value:this.exercises.length, icon:'bi bi-activity' } ]; },
@@ -288,18 +304,36 @@ export default {
         
         // Cerrar modales abiertos
         document.querySelectorAll('.modal.show').forEach(modal => {
-          if (window.bootstrap && window.bootstrap.Modal) {
-            const modalInstance = window.bootstrap.Modal.getInstance(modal);
-            if (modalInstance) {
-              modalInstance.hide();
-            } else {
+          if (window.bootstrap && window.bootstrap.Modal && window.bootstrap.Modal.getInstance) {
+            try {
+              const modalInstance = window.bootstrap.Modal.getInstance(modal);
+              if (modalInstance) {
+                modalInstance.hide();
+              } else {
+                // Fallback manual
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                // NO establecer aria-hidden en modales que pueden tener foco
+              }
+            } catch (e) {
+              // Fallback si falla getInstance
               modal.classList.remove('show');
               modal.style.display = 'none';
+              // NO establecer aria-hidden en modales que pueden tener foco
             }
+          } else {
+            // Limpieza manual si Bootstrap no está disponible
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            // NO establecer aria-hidden en modales que pueden tener foco
           }
         });
       } catch (err) {
-        console.warn('Error durante la limpieza de modales:', err);
+        // Si todo falla, al menos remover las clases básicas
+        document.querySelectorAll('.modal.show').forEach(modal => {
+          modal.classList.remove('show');
+          modal.style.display = 'none';
+        });
       }
     },
     toggleDelete(img){ img._delete = !img._delete; if(img._delete) this.deletedImages.add(img.id); else this.deletedImages.delete(img.id); },
@@ -319,10 +353,37 @@ export default {
       this.newImages.forEach(f=> fd.append('new_images[]', f));
       fd.append('_token', this.csrf); fd.append('_method','PATCH');
       try {
-        const res = await fetch(this.routes.updateFood.replace(':id', this.foodForm.id), { method:'POST', body: fd });
+        const res = await fetch(this.routes.updateFood.replace(':id', this.foodForm.id), { 
+          method:'POST', 
+          body: fd,
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        // Verificar si la respuesta es JSON válida
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('El servidor devolvió una respuesta no válida (HTML en lugar de JSON)');
+        }
+        
         const json = await res.json();
-        if(res.ok){ const idx = this.foods.findIndex(f=>f.id===this.foodForm.id); if(idx>-1) this.foods[idx]= json.food; this.closeModal('#foodAdminModal'); }
-      } catch(e){ console.error(e); }
+        if(res.ok){ 
+          const idx = this.foods.findIndex(f=>f.id===this.foodForm.id); 
+          if(idx>-1) this.foods[idx]= json.food; 
+          this.closeModal('#foodAdminModal'); 
+        } else {
+          // Manejar errores de validación
+          if (json.errors) {
+            alert('Error de validación: ' + Object.values(json.errors).flat().join(', '));
+          } else {
+            alert('Error: ' + (json.message || 'Error desconocido'));
+          }
+        }
+      } catch(e){ 
+        alert('Error al actualizar la comida: ' + e.message);
+      }
       this.saving=false;
     },
     async submitExercise(){
@@ -336,10 +397,37 @@ export default {
       fd.append('image_order', this.sortedExerciseImages.filter(i=>!i._delete).map(i=>i.id).join(','));
       fd.append('_token', this.csrf); fd.append('_method','PATCH');
       try {
-        const res = await fetch(this.routes.updateExercise.replace(':id', this.exerciseForm.id), { method:'POST', body: fd });
+        const res = await fetch(this.routes.updateExercise.replace(':id', this.exerciseForm.id), { 
+          method:'POST', 
+          body: fd,
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+        
+        // Verificar si la respuesta es JSON válida
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('El servidor devolvió una respuesta no válida (HTML en lugar de JSON)');
+        }
+        
         const json = await res.json();
-        if(res.ok){ const idx = this.exercises.findIndex(e=>e.id===this.exerciseForm.id); if(idx>-1) this.exercises[idx]= json.exercise; this.closeModal('#exerciseAdminModal'); }
-      } catch(e){ console.error(e); }
+        if(res.ok){ 
+          const idx = this.exercises.findIndex(e=>e.id===this.exerciseForm.id); 
+          if(idx>-1) this.exercises[idx]= json.exercise; 
+          this.closeModal('#exerciseAdminModal'); 
+        } else {
+          // Manejar errores de validación
+          if (json.errors) {
+            alert('Error de validación: ' + Object.values(json.errors).flat().join(', '));
+          } else {
+            alert('Error: ' + (json.message || 'Error desconocido'));
+          }
+        }
+      } catch(e){ 
+        alert('Error al actualizar el ejercicio: ' + e.message);
+      }
       this.saving=false;
     },
     closeModal(sel){ 
@@ -347,12 +435,21 @@ export default {
       if (!el) return;
       
       try {
-        const modal = window.bootstrap.Modal.getInstance(el);
-        if (modal) {
-          modal.hide();
+        // Intentar usar Bootstrap Modal si está disponible
+        if (window.bootstrap && window.bootstrap.Modal && window.bootstrap.Modal.getInstance) {
+          const modal = window.bootstrap.Modal.getInstance(el);
+          if (modal) {
+            modal.hide();
+          } else {
+            // Crear una nueva instancia y cerrarla
+            const newModal = new window.bootstrap.Modal(el);
+            newModal.hide();
+          }
         } else {
+          // Fallback manual si Bootstrap no está disponible
           el.classList.remove('show');
           el.style.display = 'none';
+          // NO establecer aria-hidden para evitar problemas de accesibilidad
           
           // Eliminar backdrops
           document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
@@ -365,14 +462,13 @@ export default {
         document.body.style.removeProperty('overflow');
         document.body.style.removeProperty('padding-right');
       } catch (err) {
-        console.warn('Error al cerrar modal:', err);
         // Limpieza de emergencia
         this.cleanupModals();
       }
     },
     confirmDelete(e){ if(!confirm('¿Eliminar definitivamente?')) return; e.target.submit(); },
     openSearchTelemetry() {
-      this.$refs.searchTelemetry.open();
+      this.showSearchAnalytics = true;
     }
   }
 };

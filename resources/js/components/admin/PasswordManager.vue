@@ -382,10 +382,8 @@ export default {
           new_password: this.form.new_password,
           new_password_confirmation: this.form.new_password_confirmation
         };
-        
-        console.log('Enviando petición directa al servidor:', requestData);
-        
-        const response = await fetch(this.updateUrl, {
+
+        const response = await fetch('/admin/change-password', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -395,7 +393,6 @@ export default {
         });
         
         const data = await response.json();
-        console.log('Respuesta del servidor:', data);
         
         if (response.ok) {
           if (typeof window.showNotification === 'function') {
