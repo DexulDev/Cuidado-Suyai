@@ -7,9 +7,25 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/css/app.css', 
+                // CSS Files
+                'resources/css/app.css',
+                'resources/css/footer.css',
+                'resources/css/layout-fixes.css',
+                'resources/css/header-footer-fix.css',
+                'resources/css/modal-fixes.css',
+                'resources/css/cross-page.css',
                 'resources/css/admin-login.css',
-                'resources/js/app.js'
+                'resources/css/theme.css',
+                'resources/css/admin-fixes.css',
+                'resources/css/modal-emergency.css',
+                'resources/css/modal-z-index.css',
+                'resources/css/z-index-hierarchy.css',
+                
+                // JavaScript Files
+                'resources/js/app.js',
+                'resources/js/modal-sin-backdrop.js',
+                'resources/js/aria-focus-enhance.js',
+                'resources/js/blade-modal-aria-fix.js'
             ],
             refresh: true,
         }),
@@ -35,12 +51,18 @@ export default defineConfig({
             }
         }
     },
-    /* server: {
-        host: '', //<-- Llena las comillas con tu dirección IPv4 (Usa en terminal el comando ipconfig para encontrarla)
-        cors: {
-            origin: ['http://'], //<-- Usa tu dirección IPv4
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            credentials: true
-        },
-    }, */
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['vue'],
+                    admin: [
+                        'resources/js/components/admin/AdminDashboard.vue',
+                        'resources/js/components/admin/SearchAnalyticsModal.vue',
+                        'resources/js/components/admin/PasswordManagerFixed.vue'
+                    ]
+                }
+            }
+        }
+    }
 });
