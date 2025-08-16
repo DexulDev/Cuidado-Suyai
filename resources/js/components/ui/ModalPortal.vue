@@ -96,20 +96,21 @@ export default {
 
 <style scoped>
 .modal-portal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
   background-color: rgba(0, 0, 0, 0.6);
-  z-index: 999999 !important;
+  z-index: 99999999 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
   overflow-y: auto;
+  isolation: isolate; /* Crea un nuevo stacking context */
 }
 
 .modal-portal-container {
