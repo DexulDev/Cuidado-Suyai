@@ -91,4 +91,9 @@ class Food extends Model
             }
         );
     }
+
+    public function images()
+    {
+        return $this->hasMany(FoodImage::class)->orderBy('position');
+    }
 }

@@ -1,0 +1,57 @@
+/* Estilos para arreglar problemas específicos del admin dashboard */
+
+/* Asegurar que el footer no flota encima del contenido */
+.admin-dashboard {
+    padding-bottom: 100px; /* Espacio para evitar que el footer flote encima */
+    min-height: calc(100vh - 250px); /* Altura mínima para el contenido */
+    position: relative;
+    z-index: 1; /* Asegurar un z-index adecuado */
+}
+
+/* Arreglar posición del footer en el dashboard de admin */
+.admin-dashboard ~ footer {
+    position: relative !important; /* Evitar posición absoluta */
+    z-index: 0 !important; /* Asegurar que esté por debajo del contenido */
+}
+
+/* Mejoras modales admin */
+#foodAdminModal .modal-content,
+#exerciseAdminModal .modal-content {
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+/* Mejorar el comportamiento del footer */
+.footer-modern {
+    position: relative;
+    z-index: 1;
+}
+
+/* Botones y acciones en las modales */
+.modal .btn-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    opacity: 1;
+    z-index: 10;
+}
+
+.modal .btn-close:hover {
+    transform: scale(1.1);
+}
+
+/* Modal backdrop mejoras */
+.modal-backdrop {
+    opacity: 0.6 !important;
+}
+
+/* Arreglo de scroll en modales largas */
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}

@@ -1,0 +1,83 @@
+/* Fix for layout issues with overlapping containers */
+
+/* Base layout structure */
+html, body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure proper stacking contexts */
+#app {
+    position: relative;
+    z-index: 1;
+}
+
+/* Main content area */
+.main-content {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+    min-height: 60vh;
+    width: 100%;
+}
+
+/* Fix background containment */
+.content-fade {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fixed header positioning */
+.app-shell-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+/* Fixed footer positioning */
+.footer-modern {
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+/* Card fixes for better appearance */
+.card-modern {
+    position: relative;
+    z-index: 1;
+}
+
+/* Layout container constraints */
+.container, .container-fluid {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix tables inside containers */
+.table-responsive {
+    overflow-x: auto;
+    position: relative;
+}
+
+/* Ensure content doesn't overflow horizontally */
+body > * {
+    max-width: 100%;
+}
+
+/* Specific admin page fixes */
+.admin-login .main-content {
+    padding: 2rem 0;
+}

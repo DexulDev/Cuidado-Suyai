@@ -1,0 +1,49 @@
+/* Admin login specific fixes */
+
+/* Override the inline styles in login.blade.php */
+body.admin-login {
+    background: radial-gradient(circle at 20% 20%, var(--cn-darklight), var(--cn-light)) !important;
+    background-attachment: fixed !important;
+}
+
+/* Make the login container stand out better */
+.admin-login .card-modern {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15) !important;
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix footer and header on admin login */
+.admin-login .app-shell-header {
+    background: var(--cn-primary) !important; 
+    box-shadow: 0 8px 32px -12px rgba(0,0,0,.35) !important;
+    color: white !important;
+}
+
+.admin-login .footer-modern {
+    background: #e6e2d3 !important;
+    color: #333333 !important;
+    position: relative;
+    z-index: 1000;
+}
+
+/* Ensure text is visible */
+.admin-login .footer-modern * {
+    color: #333333 !important;
+}
+
+/* Main content area */
+.admin-login .main-content {
+    min-height: calc(100vh - 140px);
+    position: relative;
+    z-index: 1;
+    padding-bottom: 0;
+}
+
+/* Remove any potential background overlays */
+.admin-login:before,
+.admin-login:after {
+    display: none !important;
+}

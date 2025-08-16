@@ -1,377 +1,495 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Cuidado Suyai - Motor de búsqueda de recetas y ejercicios</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <!-- Fuentes -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- Favicon del Liahona -->
-    <link rel="icon" href="https://www.google.com/s2/favicons?sz=32&domain_url=https%3A%2F%2Fwww.colegiosliahonaepv.cl%2F" type="image/png">
-    <!-- Estilos personalizados -->
+    <title>{{ config('app.name') }} - Bienestar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    @vite(['resources/css/app.css','resources/css/footer.css','resources/css/layout-fixes.css','resources/css/header-footer-fix.css','resources/css/modal-fixes.css','resources/css/cross-page.css','resources/js/app.js'])
+    @stack('styles')
     <style>
-        :root {
-            --cn-primary: #8B0000;
-            --cn-secondary: #A52A2A;
-            --cn-accent: #FFC107;
-            --cn-light: #F5DEB3;
-            --cn-darklight: #d3bf9a;
-            --cn-dark: #000000;
-            --cn-white: #FFFFFF;
+        :root { scroll-behavior: smooth; }
+        body { 
+            font-family: var(--cn-font-body);
+            background: radial-gradient(circle at 20% 20%, rgba(245,222,179,.4), rgba(211,191,154,.25) 40%, rgba(255,255,255,.95));
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            position: relative;
+            color: var(--cn-dark);
+            overflow-x: hidden; /* Prevent horizontal scrolling issues */
+            background-attachment: fixed; /* Mantener fijo el fondo */
         }
         
-        body {
-            font-family: 'Poppins', sans-serif !important;
-            background: 
-                linear-gradient(to right, #e9cd98 0%, transparent 5%),
-                linear-gradient(to left, #e9cd98 0%, transparent 5%),
-                #f5deb3 !important;
+        .main-content {
+            flex-grow: 1;
+            z-index: 1; /* Lower z-index than header and footer */
+            position: relative; /* Required for z-index to work */
+        }
+        .app-shell-header {
+            backdrop-filter: blur(20px) saturate(180%);
+            background: #872727 !important; /* Fixed wine color */
+            background-color: #872727 !important; /* Fixed wine color - redundancia intencional */
+            background-image: none !important; /* Eliminar cualquier gradiente o imagen */
+            color: white !important; /* Ensure text is white */
+            box-shadow: 0 8px 32px -12px rgba(0,0,0,.35);
+            border-bottom: 1px solid rgba(255,255,255,.2);
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100; /* Nivel normal para header */
+            transition: var(--cn-transition);
+            padding: .6rem 0;
+        }
+        .app-shell-header * {
+            color: white !important; /* Force all text in header to be white */
+        }
+        .brand-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand-title i {
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+        }
+        .nav-soft-btn {
+            background: var(--cn-gradient-accent);
+            color: var(--cn-dark);
+            padding: .55rem 1.1rem;
+            border-radius: var(--cn-radius-sm);
+            font-weight: 600;
+            box-shadow: 0 4px 18px -6px rgba(0,0,0,.4);
+            transition: var(--cn-transition);
+            transform-origin: center;
+        }
+        .nav-soft-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px -4px rgba(0,0,0,.45);
+        }
+        .nav-link-clean {
+            font-weight: 500;
+            letter-spacing: .25px;
+            padding: .55rem 1rem;
+            border-radius: var(--cn-radius-sm);
+            transition: var(--cn-transition);
+            color: var(--cn-white) !important;
+            opacity: .85;
+            position: relative;
+        }
+        .nav-link-clean:hover, .nav-link-clean.active {
+            opacity: 1;
+            background: rgba(255,255,255,.15);
+            transform: translateY(-1px);
+        }
+        .nav-link-clean.active::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: var(--cn-accent);
+            border-radius: 10px;
+        }
+        main.main-content {
+            flex: 1 0 auto; /* Flex grow but don't shrink */
+            width: 100%;
+            padding-top: 2rem;
+            padding-bottom: 6rem; /* Add more space for footer */
+            position: relative;
+            z-index: 10;
+            min-height: 60vh; /* Minimum height for main content */
+        }
+        
+/* Footer Styles */
+        .footer-modern {
+            background: #4d1d1d !important; /* Dark wine color */
+            background-color: #4d1d1d !important; /* Dark wine - redundancia intencional */
+            background-image: none !important; /* Eliminar cualquier gradiente o imagen */
+            color: white !important; /* Light text for contrast */
+            padding: 1.5rem 0;
+            position: relative;
+            width: 100%;
+            z-index: 90; /* Nivel normal para footer */
+        }
+        .footer-modern * {
+            color: rgba(255,255,255,0.9) !important; /* Ensure all text in footer is light */
+        }        
+        .footer-modern .container {
+            max-width: 1140px;
+            color: white !important; /* Ensure all text is white in container */
+        }
+        
+        .footer-modern small {
+            font-weight: 500;
+            letter-spacing: .4px;
+            color: white !important; /* Ensure small text is white */
+        }
+        
+        /* Badge and UI Elements */
+        .pill-badge {
+            background: rgba(255,255,255,.22);
+            color: #fff;
+            padding: .35rem .85rem;
+            font-size: .7rem;
+            border-radius: 50rem;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 10px -4px rgba(0,0,0,.3);
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem 0 1.5rem;
+        }
+        
+        .hero-section h1 {
+            font-size: clamp(1.8rem, 2.3rem + .8vw, 3.2rem);
+            background: linear-gradient(90deg, var(--cn-primary), var(--cn-secondary));
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+        
+        .hero-section p.lead {
+            font-weight: 400;
+            font-size: 1.1rem;
+            max-width: 820px;
+            opacity: 0.9;
+        }
+        
+        /* Card and Container Styles */
+        .glass {
+            backdrop-filter: blur(16px) saturate(160%);
+            background: rgba(255,255,255,.8);
+            border: 1px solid rgba(255,255,255,.6);
+            border-radius: var(--cn-radius);
+            box-shadow: 0 12px 32px -10px rgba(0,0,0,.16);
+            transition: var(--cn-transition);
+        }
+        
+        .glass:hover {
+            box-shadow: 0 16px 36px -8px rgba(0,0,0,.2);
+            transform: translateY(-3px);
+        }
+        
+        .section-divider {
+            height: 4px;
+            width: 70px;
+            background: var(--cn-accent);
+            border-radius: 2px;
+            margin: 0.5rem 0 1.5rem;
+        }
+        
+        /* Animations and Transitions */
+        .content-fade {
+            animation: fadeIn .7s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .link-icon {
+            transition: var(--cn-transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            background: rgba(var(--cn-primary-rgb), 0.1);
+        }
+        
+        .link-icon:hover {
+            transform: translateY(-3px);
+            background: rgba(var(--cn-primary-rgb), 0.15);
+            box-shadow: 0 4px 12px -2px rgba(var(--cn-primary-rgb), 0.2);
+        }
+        
+        .link-icon-footer {
+            transition: var(--cn-transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            color: #f5deb3 !important; /* Cream color */
+        }
+        
+        .link-icon-footer i {
+            font-size: 1.25rem;
+            color: #f5deb3 !important; /* Cream color */
+        }
+        
+        .link-icon-footer:hover {
+            transform: translateY(-3px);
+            background: var(--cn-accent);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .link-icon-footer:hover i {
             color: var(--cn-dark) !important;
         }
         
-        .navbar-brand {
-            font-weight: 600;
-            color: var(--cn-primary);
+        /* Toolbar and Button Styles */
+        .toolbar-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
         }
         
-        .footer, .footer .container, .footer .container > * {
-            margin-top: auto;
-            padding: 1rem 0;
-            background-color: var(--cn-darklight) !important;
+        .toolbar-actions .btn {
+            border-radius: var(--cn-radius-sm);
+            font-weight: 500;
+            padding: .5rem 1.2rem;
+            transition: var(--cn-transition);
         }
         
         .btn-primary {
-            background-color: var(--cn-accent) !important;
-            border-color: var(--cn-accent) !important;
-            color: var(--cn-dark) !important;
-            font-weight: 500;
+            background: var(--cn-primary);
+            border-color: var(--cn-primary);
+            box-shadow: 0 4px 12px -4px rgba(var(--cn-primary-rgb), 0.4);
         }
         
         .btn-primary:hover {
-            background-color: #e6ac00 !important;
-            border-color: #e6ac00 !important;
-            color: var(--cn-dark) !important;
+            background: var(--cn-primary);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px -3px rgba(var(--cn-primary-rgb), 0.5);
         }
         
-        .btn-outline-primary {
-            color: var(--cn-primary) !important;
-            border-color: var(--cn-primary) !important;
+        .shadow-soft {
+            box-shadow: 0 8px 30px -8px rgba(0,0,0,.18);
         }
         
-        .btn-outline-primary:hover {
-            background-color: var(--cn-primary) !important;
-            color: var(--cn-white) !important;
+        /* Search Component */
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 1.5rem;
         }
         
-        .logo-header, .logo-header .d-flex {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem 0;
-            background-color: var(--cn-darklight) !important;
-            transition: all 0.3s ease;
+        .search-wrapper input {
+            padding: .65rem 1rem .65rem 2.6rem;
+            border-radius: var(--cn-radius) !important;
+            border-color: rgba(0,0,0,.1);
+            box-shadow: var(--cn-shadow-sm);
+            transition: var(--cn-transition);
         }
         
-        .logo-header img {
-            max-height: 70px;
-            transition: all 0.3s ease;
+        .search-wrapper input:focus {
+            box-shadow: 0 3px 15px -3px rgba(var(--cn-primary-rgb), 0.25);
+            border-color: rgba(var(--cn-primary-rgb), 0.3);
         }
         
-        .logo-title {
-            margin-left: 15px;
-            text-align: left;
-            transition: all 0.3s ease;
-        }
-        
-        .logo-title h1 {
-            margin: 0;
-            color: var(--cn-primary);
-            font-weight: 600;
-            font-size: 1.8rem;
-            transition: all 0.3s ease;
-        }
-        
-        .logo-title p {
-            margin: 0;
-            color: var(--cn-dark);
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-        
-        .card {
-            border: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--cn-primary);
-        }
-        
-        .badge {
-            font-weight: 500;
-        }
-        
-        .badge.bg-category {
-            background-color: var(--cn-accent) !important;
-            color: var(--cn-dark) !important;
-        }
-        
-        .badge.bg-primary {
-            background-color: var(--cn-primary) !important;
-            color: var(--cn-white) !important;
-        }
-        
-        .badge.bg-success {
-            background-color: var(--cn-accent) !important;
-            color: var(--cn-dark) !important;
-        }
-        
-        .badge.bg-warning {
-            background-color: var(--cn-secondary) !important;
-            color: var(--cn-white) !important;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-            color: var(--cn-primary);
-        }
-        
-        .nav-pills .nav-link.active {
-            background-color: var(--cn-primary);
-            color: var(--cn-white);
-        }
-        
-        .text-primary {
-            color: var(--cn-primary) !important;
-        }
-        
-        .border-primary {
-            border-color: var(--cn-primary) !important;
-        }
-        
-        .nutrition-value {
+        .search-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--cn-secondary);
-            font-weight: bold;
         }
         
-        .spinner-border {
-            color: var(--cn-primary) !important;
+        /* School Logo */
+        .school-logo {
+            height: 40px;
+            width: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: var(--cn-transition);
         }
         
-        .custom-btn {
-            transition: all 0.3s ease;
-            font-weight: 500 !important;
-            padding: 0.5rem 1rem !important;
-            text-decoration: none !important;
+        .school-logo-large {
+            height: 100px;
+            width: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: var(--cn-transition);
         }
         
-        .custom-btn-primary {
-            background-color: var(--cn-accent) !important;
-            border-color: var(--cn-accent) !important;
-            color: var(--cn-dark) !important;
+        .school-logo:hover, .school-logo-large:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
-        
-        .custom-btn-primary:hover {
-            background-color: #e6ac00 !important;
-            border-color: #e6ac00 !important;
-            color: var(--cn-dark) !important;
-        }
-        
-        .custom-btn-outline {
-            background-color: transparent !important;
-            border-color: var(--cn-primary) !important;
-            color: var(--cn-primary) !important;
-        }
-        
-        .custom-btn-outline:hover {
-            background-color: var(--cn-primary) !important;
-            color: var(--cn-white) !important;
-        }
-        
+
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
-            main.container {
-                padding-top: 0 !important;
-                padding-bottom: 0 !important;
-                margin-bottom: 0 !important;
+            .brand-title { 
+                font-size: 1.05rem; 
             }
-
-            .container {
-                padding-left: 8px !important;
-                padding-right: 8px !important;
+            .hero-section h1 { 
+                font-size: 1.8rem; 
             }
-
-            .footer {
-                margin-top: 0.5rem !important;
-                padding: 0.5rem 0 !important;
+            .school-logo {
+                height: 32px;
             }
-
-            h1 {
-                font-size: 1.25rem !important;
-                margin-bottom: 0.5rem !important;
+            .school-logo-large {
+                height: 40px;
             }
-
-            .row {
-                margin-bottom: 0 !important;
+            .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--cn-primary);
+                padding: 1rem;
+                box-shadow: 0 10px 20px -5px rgba(0,0,0,.3);
+                border-top: 1px solid rgba(255,255,255,.1);
             }
-
-            .logo-header {
-            padding: 0.5rem 0 !important;
-            margin-bottom: 0.75rem !important;
+            .navbar-collapse ul {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
             }
-
-            .logo-header img {
-                max-height: 40px !important;
+            .navbar-collapse .nav-item {
+                width: 100%;
             }
-
-            .logo-title {
-                margin-left: 8px !important;
+            .navbar-collapse .nav-link-clean {
+                width: 100%;
+                display: block;
+                padding: .75rem 1rem;
             }
-
-            .logo-title h1 {
-                font-size: 1.2rem !important;
-            }
-
-            .custom-btn {
-                padding: 0.35rem 0.6rem !important;
-                font-size: 0.85rem !important;
-            }
-
-            .custom-btn i {
-                font-size: 0.85rem !important;
-            }
-        
-            .btn {
-                min-height: 38px !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-
-            @media (max-width: 460px) {
-                .logo-header .container {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-
-                .logo-header .btn-container {
-                    margin-top: 0.5rem;
-                    align-self: flex-end;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                }
-
-                .custom-btn {
-                    margin-bottom: 0.25rem;
-                    width: auto;
-                }
-
-                .custom-btn.me-2 {
-                    margin-right: 0 !important;
-                }
-
-                .btn-text {
-                    display: inline-block;
-                }
+            .navbar-collapse .nav-soft-btn {
+                margin-top: .5rem;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
     </style>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
-    <div class="logo-header shadow-sm mb-4">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <img src="https://i0.wp.com/www.colegiosliahonaepv.cl/wp-content/uploads/2021/11/cropped-0000-copia-3-1.jpg?fit=240%2C135&ssl=1" alt="Logo Colegio">
-                <div class="logo-title">
-                    <h1>Cuidado Suyai</h1>
+<body class="@yield('body-class', '')">
+    <header class="app-shell-header">
+        <div class="container">
+            <nav class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3 brand-title">
+                    <a href="{{ route('foods.index') }}" class="d-flex align-items-center text-decoration-none">
+                        <img src="https://www.colegiosliahonaepv.cl/wp-content/uploads/2021/11/0000-copia-3.jpg" alt="Colegio Liahona" class="school-logo-large">
+                    </a>
                 </div>
-            </div>
-            <div>
-                <a href="{{ route('foods.index') }}" class="btn custom-btn {{ request()->routeIs('foods.*') ? 'custom-btn-primary' : 'custom-btn-outline' }} me-2">
-                    <i class="bi bi-journal-richtext me-1"></i> Recetas
-                </a>
-                <a href="{{ route('exercises.index') }}" class="btn custom-btn {{ request()->routeIs('exercises.*') ? 'custom-btn-primary' : 'custom-btn-outline' }} me-2">
-                    <i class="bi bi-activity me-1"></i> Ejercicios
-                </a>
-                <a href="{{ route('admin.login') }}" class="btn custom-btn custom-btn-outline">
-                    <i class="bi bi-gear me-1"></i> Admin
-                </a>
-            </div>
+                
+                <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="bi bi-list text-white fs-4"></i>
+                </button>
+                
+                <div class="collapse navbar-collapse d-md-flex justify-content-end" id="navbarContent">
+                    <ul class="nav align-items-center gap-2">
+                        <li class="nav-item">
+                            <a href="{{ route('foods.index') }}" class="nav-link nav-link-clean {{ request()->is('inicio') || request()->is('/') ? 'active' : '' }}">
+                                <i class="bi bi-journal-richtext me-1 d-md-none d-inline-block"></i>Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item ms-md-2">
+                            <a href="{{ route('admin.login') }}" class="nav-soft-btn">
+                                <i class="bi bi-gear me-md-0 me-2"></i>
+                                <span class="d-md-none">Administrar</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
         </div>
-    </div>
+    </header>
 
-    <main class="container py-2">
-        @yield('content')
+    <main class="main-content">
+        <div class="container content-fade" id="app">
+            @yield('hero')
+            @yield('content')
+            <toasts-container></toasts-container>
+        </div>
     </main>
 
-    <footer class="footer text-center text-muted py-2">
+    <footer class="footer-modern">
         <div class="container">
-            <div class="d-flex align-items-center justify-content-center flex-wrap">
-                <div class="fw-bold me-3" style="color: var(--cn-primary); font-size: 0.9rem;">Educar Para la Vida</div>
-                
-                <div class="d-flex align-items-center">
-                    <a href="https://www.facebook.com/liahonapucon/?locale=es_LA" target="_blank" class="mx-1 text-decoration-none" aria-label="Facebook">
-                        <i class="bi bi-facebook" style="color: var(--cn-primary); font-size: 1.2rem;"></i>
-                    </a>
-                    <a href="https://www.instagram.com/liahona.pucon/?hl=es" target="_blank" class="mx-1 text-decoration-none" aria-label="Instagram">
-                        <i class="bi bi-instagram" style="color: var(--cn-primary); font-size: 1.2rem;"></i>
-                    </a>
-                    <a href="https://www.colegiosliahonaepv.cl/" target="_blank" class="mx-1 text-decoration-none" aria-label="Sitio web">
-                        <i class="bi bi-globe" style="color: var(--cn-primary); font-size: 1.2rem;"></i>
-                    </a>
+            <div class="row g-4 justify-content-center text-center">
+                <div class="col-12">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-center align-items-center gap-2 brand-title mb-2">
+                            <i class="bi bi-heart-pulse"></i>
+                            <span>Cuidado Suyai</span>
+                        </div>
+                        <div class="section-divider mx-auto" style="width: 40px; margin: 12px auto; background: var(--cn-accent);"></div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-center gap-3 mb-3">
+                        <a class="text-decoration-none link-icon-footer" href="https://www.facebook.com/liahonapucon/?locale=es_LA" target="_blank" aria-label="Facebook">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a class="text-decoration-none link-icon-footer" href="https://www.instagram.com/liahona.pucon/?hl=es" target="_blank" aria-label="Instagram">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a class="text-decoration-none link-icon-footer" href="https://www.colegiosliahonaepv.cl/" target="_blank" aria-label="Sitio web">
+                            <i class="bi bi-globe"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <p class="text-center small fw-semibold mb-0" style="color: white !important;">
+                        Educar Para la Vida • Matias Oyarzo • Ignacio Vidal • Simon Morales
+                    </p>
+                    <p class="text-center small mt-2" style="color: white !important; opacity: 0.75;">© {{ date('Y') }} Cuidado Suyai. Todos los derechos reservados.</p>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function enforceStyles() {
-            document.querySelectorAll('.badge.bg-primary').forEach(badge => {
-                badge.style.backgroundColor = '#8B0000';
-                badge.style.color = '#FFFFFF';
+        // Script adicional para garantizar que los backdrops (filtro gris) sean interactivos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Función para arreglar los modales después de que se muestren
+            document.addEventListener('shown.bs.modal', function(event) {
+                // Asegurar que el backdrop tenga los estilos correctos
+                document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                    backdrop.style.opacity = '0.5';
+                    backdrop.style.pointerEvents = 'auto';
+                });
+                
+                // Asegurar que el modal tenga eventos correctos
+                const modal = event.target;
+                modal.style.pointerEvents = 'auto';
+                
+                // SOLUCIÓN ARIA: Eliminar aria-hidden cuando el modal está visible
+                modal.removeAttribute('aria-hidden');
+                
+                // Asegurar que el contenido sea interactivo
+                const content = modal.querySelector('.modal-content');
+                if (content) content.style.pointerEvents = 'auto';
+                
+                // Asegurar que el diálogo sea interactivo
+                const dialog = modal.querySelector('.modal-dialog');
+                if (dialog) dialog.style.pointerEvents = 'auto';
+                
+                // Reparar el botón de cierre para foco
+                const closeButton = modal.querySelector('.btn-close');
+                if (closeButton) {
+                    closeButton.setAttribute('tabindex', '0');
+                    closeButton.setAttribute('aria-label', 'Cerrar modal');
+                }
             });
-            
-            document.querySelectorAll('.badge.bg-success').forEach(badge => {
-                badge.style.backgroundColor = '#FFC107';
-                badge.style.color = '#000000';
-            });
-            
-            document.querySelectorAll('.badge.bg-warning').forEach(badge => {
-                badge.style.backgroundColor = '#A52A2A';
-                badge.style.color = '#FFFFFF';
-            });
-            
-            document.querySelectorAll('.btn-primary').forEach(btn => {
-                btn.style.backgroundColor = '#FFC107';
-                btn.style.borderColor = '#FFC107';
-                btn.style.color = '#000000';
-            });
-            
-            document.querySelectorAll('.custom-btn-primary').forEach(btn => {
-                btn.style.backgroundColor = '#FFC107';
-                btn.style.borderColor = '#FFC107';
-                btn.style.color = '#000000';
-            });
-            
-            document.querySelectorAll('.custom-btn-outline').forEach(btn => {
-                btn.style.backgroundColor = 'transparent';
-                btn.style.borderColor = '#8B0000';
-                btn.style.color = '#8B0000';
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', enforceStyles);
-        window.addEventListener('load', enforceStyles);
-        
-        const observer = new MutationObserver(enforceStyles);
-        observer.observe(document.body, { childList: true, subtree: true });
-        
-        setInterval(enforceStyles, 2000);
+        });
     </script>
 </body>
 </html>

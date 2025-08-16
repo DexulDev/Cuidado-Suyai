@@ -1,0 +1,81 @@
+/* Corrección del fondo de la página de login */
+
+body.admin-login {
+    background: var(--cn-primary) !important;
+    background: linear-gradient(135deg, #872727 0%, #6a1f1f 100%) !important;
+    background-attachment: fixed !important;
+}
+
+/* Mejorar el contraste y diseño del formulario de login */
+.admin-login .card-modern {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: none !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+}
+
+/* Diseño coherente con el resto de la aplicación */
+.admin-login .btn-cn-accent {
+    background: var(--cn-accent);
+    border-color: var(--cn-accent);
+    color: var(--cn-dark);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.admin-login .btn-cn-accent:hover {
+    background: #e0aa00;
+    border-color: #e0aa00;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Eliminar cualquier fondo crema residual */
+.admin-login .main-content, 
+.admin-login .app-content {
+    background: transparent !important;
+}
+
+/* Asegurar que el footer también tenga colores apropiados */
+.admin-login .footer-modern {
+    background: rgba(0, 0, 0, 0.2) !important; 
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-login .footer-modern * {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Mejorar la apariencia de los campos del formulario */
+.admin-login .form-control {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.admin-login .form-control:focus {
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(135, 39, 39, 0.25);
+    border-color: var(--cn-primary);
+}
+
+/* Efectos de animación para mejorar la experiencia */
+.admin-login .card-modern {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

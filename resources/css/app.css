@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import 'bootstrap';
+@import './theme.css';
+@import './modal-fixes.css';
 
 :root {
     --cn-primary: #8B0000;

@@ -11,7 +11,7 @@ class ExerciseController extends Controller
 {
     public function index()
     {
-        return view('exercises.index');
+        return view('foods.index');
     }
 
     public function apiList()
@@ -62,6 +62,13 @@ class ExerciseController extends Controller
         $this->saveSearch($request, 'exercise', $results->count());
         
         return $results;
+    }
+
+    // Nuevo método show
+    public function show(Exercise $exercise)
+    {
+        $exercise->image_path = $exercise->getImagePath();
+        return $exercise;
     }
 
     private function saveSearch(Request $request, string $type, int $resultsCount)

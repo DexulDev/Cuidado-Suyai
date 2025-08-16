@@ -60,6 +60,19 @@ class FoodController extends Controller
         return $results;
     }
 
+    // Nuevo método show para detalles completos
+    public function show(Food $food)
+    {
+        $food->load('images');
+        $food->image_path = $food->getImagePath();
+        // Añadir paths completos para imágenes secundarias
+        $food->images->transform(function($img) {
+            $img->full_url = asset('storage/foods/' . $img->path);
+            return $img;
+        });
+        return $food;
+    }
+
     private function saveSearch(Request $request, string $type, int $resultsCount)
     {
         try {

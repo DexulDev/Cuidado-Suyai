@@ -1,0 +1,17 @@
+/* Footer custom styles */
+.footer-modern {
+  background: #e6e2d3 !important; /* Grayish cream color */
+  color: #333333 !important; /* Dark text for contrast */
+}
+
+.footer-modern * {
+  color: #333333 !important; /* Ensure all text in footer is dark */
+}
+
+.footer-modern .link-icon-footer i {
+  color: #872727 !important; /* Wine color for icons */
+}
+
+.footer-modern .link-icon-footer:hover i {
+  color: #a04040 !important; /* Lighter wine color on hover */
+}

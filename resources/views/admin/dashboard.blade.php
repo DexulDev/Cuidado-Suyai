@@ -1,116 +1,246 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Cuidado Suyai</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --cn-primary: #8B0000;
-            --cn-secondary: #A52A2A;
-            --cn-accent: #FFC107;
-            --cn-light: #F5DEB3;
-            --cn-dark: #000000;
-            --cn-white: #FFFFFF;
-        }
+@extends('layouts.app')
+
+@section('content')
+<!-- Header y título de página -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold m-0" style="color:var(--cn-primary)">Panel de Administración</h1>
+    <div class="d-flex align-items-center gap-3">
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#searchAnalyticsModal">
+            <i class="bi bi-graph-up"></i> Telemetría de búsquedas <span class="badge bg-light text-dark">{{ $searchesToday }} hoy</span>
+        </button>
         
-        body {
-            background: linear-gradient(to right, #e9cd98 0%, transparent 5%), linear-gradient(to left, #e9cd98 0%, transparent 5%), #f5deb3 !important;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <nav class="p-4" style="background-color: var(--cn-primary);">
-        <div class="container mx-auto flex justify-between items-center text-white">
-            <h1 class="text-xl font-bold">Panel de Administración - Cuidado Suyai</h1>
-            <div class="flex items-center space-x-4">
-                @if(Session::get('needs_password_change'))
-                    <span class="px-2 py-1 rounded text-sm" style="background-color: var(--cn-accent); color: var(--cn-dark);">
-                        Cambiar contraseña requerido
-                    </span>
-                @endif
-                <a href="{{ route('admin.logout') }}" class="hover:underline">Cerrar Sesión</a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mx-auto p-6">
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                {{ session('success') }}
-            </div>
+        @if(Session::get('needs_password_change'))
+            <span class="badge text-bg-warning text-dark">Cambiar contraseña requerido</span>
         @endif
+        <form action="{{ route('admin.logout') }}" method="POST" onsubmit="return confirm('¿Cerrar sesión?')">
+            @csrf
+            <button class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Salir</button>
+        </form>
+    </div>
+</div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Total Comidas</h3>
-                <p class="text-3xl font-bold" style="color: var(--cn-primary);">{{ $foodsCount }}</p>
+<!-- Modal para telemetría de búsquedas -->
+<div class="modal fade admin-modal" id="searchAnalyticsModal" tabindex="-1" aria-labelledby="searchAnalyticsModalLabel" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content glass border-0">
+            <div class="modal-header bg-gradient-primary text-white border-0">
+                <h5 class="modal-title" id="searchAnalyticsModalLabel">
+                    <i class="bi bi-search-heart me-2"></i>Telemetría de Búsquedas
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Total Ejercicios</h3>
-                <p class="text-3xl font-bold" style="color: var(--cn-secondary);">{{ $exercisesCount }}</p>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Búsquedas Hoy</h3>
-                <p class="text-3xl font-bold" style="color: var(--cn-accent);">{{ App\Models\Search::whereDate('created_at', today())->count() }}</p>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Total Búsquedas</h3>
-                <p class="text-3xl font-bold" style="color: var(--cn-secondary);">{{ App\Models\Search::count() }}</p>
-            </div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Gestión de Comidas</h2>
-                <p class="text-gray-600 mb-4">Agregar nuevas recetas y comidas saludables</p>
-                <a href="{{ route('admin.foods.create') }}" 
-                   class="inline-block px-4 py-2 rounded transition"
-                   style="background-color: var(--cn-primary); color: white;"
-                   onmouseover="this.style.backgroundColor='#660000'"
-                   onmouseout="this.style.backgroundColor='var(--cn-primary)'">
-                    Agregar Nueva Comida
-                </a>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Gestión de Ejercicios</h2>
-                <p class="text-gray-600 mb-4">Agregar nuevos ejercicios y rutinas</p>
-                <a href="{{ route('admin.exercises.create') }}" 
-                   class="inline-block px-4 py-2 rounded transition"
-                   style="background-color: var(--cn-secondary); color: white;"
-                   onmouseover="this.style.backgroundColor='#8B1538'"
-                   onmouseout="this.style.backgroundColor='var(--cn-secondary)'">
-                    Agregar Nuevo Ejercicio
-                </a>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Búsquedas Populares</h2>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="font-semibold mb-2">Comidas más buscadas:</h3>
-                    <ul class="space-y-1">
-                        @foreach(App\Models\Search::getPopularTerms('food', 5) as $search)
-                            <li class="text-gray-600">{{ $search->query }} ({{ $search->count }} búsquedas)</li>
-                        @endforeach
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="font-semibold mb-2">Ejercicios más buscados:</h3>
-                    <ul class="space-y-1">
-                        @foreach(App\Models\Search::getPopularTerms('exercise', 5) as $search)
-                            <li class="text-gray-600">{{ $search->query }} ({{ $search->count }} búsquedas)</li>
-                        @endforeach
-                    </ul>
+            <div class="modal-body p-0">
+                <div class="search-telemetry-container p-3">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="stats-card p-3 text-center shadow-sm rounded">
+                                <h5 class="mb-1">Total Búsquedas</h5>
+                                <div id="totalSearchesCount" class="fs-2 fw-bold text-primary">{{ $searchesCount }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card p-3 text-center shadow-sm rounded">
+                                <h5 class="mb-1">Búsquedas Hoy</h5>
+                                <div id="todaySearchesCount" class="fs-2 fw-bold text-success">{{ $searchesToday }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stats-card p-3 shadow-sm rounded">
+                                <h5 class="mb-2">Filtros</h5>
+                                <div class="d-flex gap-2">
+                                    <button onclick="filterSearches('all')" class="btn btn-sm btn-outline-primary active">Todas</button>
+                                    <button onclick="filterSearches('food')" class="btn btn-sm btn-outline-primary">Alimentos</button>
+                                    <button onclick="filterSearches('exercise')" class="btn btn-sm btn-outline-primary">Ejercicios</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-modern mb-4">
+                        <div class="table-responsive search-table-container">
+                            <table class="table table-hover align-middle mb-0" id="searchesTable">
+                                <thead class="small">
+                                    <tr>
+                                        <th>TIPO</th>
+                                        <th>BÚSQUEDA</th>
+                                        <th>CATEGORÍA</th>
+                                        <th>RESULTADOS</th>
+                                        <th>FECHA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+
+<!-- Aplicación Vue -->
+<div id="app" class="content-fade">
+    @php
+        $adminRoutes = [
+            'createFood' => route('admin.foods.create'),
+            'createExercise' => route('admin.exercises.create'),
+            'updateFood' => url('/admin/foods/:id'),
+            'destroyFood' => url('/admin/foods/:id'),
+            'updateExercise' => url('/admin/exercises/:id'),
+            'searchAnalyticsJson' => route('admin.api.searches'),
+        ];
+    @endphp
+
+    <admin-dashboard 
+        :initial-foods='@json($foods)'
+        :initial-exercises='@json($exercises)'
+        :routes='@json($adminRoutes)'
+        csrf='{{ csrf_token() }}'
+    ></admin-dashboard>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+    // Variables globales
+    let currentSearchData = [];
+    let currentFilter = 'all';
+    window.currentSearchData = [];
+    window.currentFilter = 'all';
+    
+    // Hacer las funciones globales desde el principio
+    window.filterSearches = function(filter) {
+        window.currentFilter = filter;
+        
+        // Actualizar botones activos
+        document.querySelectorAll('.stats-card .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Encontrar el botón clickeado y marcarlo como activo
+        const clickedButton = document.querySelector(`[onclick="filterSearches('${filter}')"]`);
+        if (clickedButton) {
+            clickedButton.classList.add('active');
+        }
+        
+        showFilteredSearches();
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cuando se abre el modal de búsquedas, cargar los datos
+        const searchModal = document.getElementById('searchAnalyticsModal');
+        if (searchModal) {
+            searchModal.addEventListener('shown.bs.modal', function() {
+                loadSearchAnalytics();
+            });
+        }
+        
+        // También podemos cargar un preview inicial
+        loadSearchAnalyticsPreview();
+    });
+    
+    async function loadSearchAnalytics() {
+        try {
+            const response = await fetch('{{ route("admin.api.searches") }}');
+            const data = await response.json();
+            
+            window.currentSearchData = data.searches.data;
+            currentSearchData = data.searches.data;
+            
+            // Actualizar las estadísticas
+            document.getElementById('totalSearchesCount').textContent = data.stats.total;
+            document.getElementById('todaySearchesCount').textContent = data.stats.today;
+            
+            // Mostrar datos filtrados
+            showFilteredSearches();
+            
+        } catch (error) {
+            console.error('Error cargando datos de búsquedas:', error);
+            document.querySelector('#searchesTable tbody').innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="alert alert-danger">Error al cargar datos. Intente nuevamente.</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    function loadSearchAnalyticsPreview() {
+        // Cargar solo los datos básicos para mostrar en el botón
+        fetch('{{ route("admin.api.searches") }}')
+            .then(response => response.json())
+            .then(data => {
+                const todayCount = document.querySelector('.badge.bg-light.text-dark');
+                if (todayCount) {
+                    todayCount.textContent = data.stats.today + ' hoy';
+                }
+            })
+            .catch(error => console.error('Error cargando preview de búsquedas:', error));
+    }
+    
+    function showFilteredSearches() {
+        const tableBody = document.querySelector('#searchesTable tbody');
+        
+        // Usar la variable global o local
+        const dataToUse = window.currentSearchData || currentSearchData;
+        
+        if (!dataToUse || dataToUse.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="alert alert-info">No se encontraron datos de búsqueda.</div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Filtrar datos según el filtro activo
+        let filteredData = dataToUse;
+        if (window.currentFilter !== 'all') {
+            filteredData = dataToUse.filter(item => item.search_type === window.currentFilter);
+        }
+        
+        // Construir filas de la tabla
+        let html = '';
+        
+        filteredData.forEach(search => {
+            const badgeClass = search.search_type === 'food' ? 'bg-success' : 'bg-primary';
+            const searchLabel = search.search_type === 'food' ? 'Alimento' : 'Ejercicio';
+            const date = new Date(search.created_at);
+            const formattedDate = date.toLocaleString();
+            
+            html += `
+                <tr>
+                    <td><span class="badge ${badgeClass}">${searchLabel}</span></td>
+                    <td>${search.query || '<em>Sin texto</em>'}</td>
+                    <td>${search.category || '-'}</td>
+                    <td>${search.results_count}</td>
+                    <td class="small">${formattedDate}</td>
+                </tr>
+            `;
+        });
+        
+        if (html === '') {
+            html = `
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="alert alert-info">No hay búsquedas con el filtro actual.</div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        tableBody.innerHTML = html;
+    }
+</script>
+@endpush

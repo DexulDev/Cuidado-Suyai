@@ -1,0 +1,56 @@
+/**
+ * Estilos adicionales para interacción entre páginas
+ */
+
+/* Asegurar que el modal de comida funciona en todas las páginas */
+#foodDetailModal {
+  z-index: 9999 !important;
+}
+
+/* Hacer que los ejercicios puedan mostrar que son clickables para abrir comidas */
+.exercise-card.food-linked {
+  position: relative;
+  cursor: pointer;
+}
+
+.exercise-card.food-linked::after {
+  content: "Ver comida recomendada";
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: var(--cn-accent);
+  color: var(--cn-dark);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.exercise-card.food-linked:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Botón global para abrir modales de comida */
+.open-food-btn {
+  background: var(--cn-primary);
+  color: white;
+  border: none;
+  border-radius: var(--cn-radius-sm);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.open-food-btn:hover {
+  background: var(--cn-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

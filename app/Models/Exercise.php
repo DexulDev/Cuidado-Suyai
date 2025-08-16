@@ -41,6 +41,11 @@ class Exercise extends Model
     public function getImagePath()
     {
         if (!$this->attributes['image_url']) {
+            // Si no tiene imagen principal, intentar usar la primera de las imágenes
+            $firstImage = $this->images()->orderBy('position')->first();
+            if ($firstImage) {
+                return asset('storage/exercises/' . $firstImage->path);
+            }
             return null;
         }
         
@@ -67,5 +72,11 @@ class Exercise extends Model
                 return asset('storage/exercises/' . $value);
             }
         );
+    }
+    
+    // Relación con las imágenes
+    public function images()
+    {
+        return $this->hasMany(ExerciseImage::class)->orderBy('position');
     }
 }

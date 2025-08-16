@@ -1,0 +1,74 @@
+/* Correcciones para colores de header y footer */
+
+/* Corregimos el header para eliminar el fondo crema */
+.app-shell-header {
+    background-color: #872727 !important; /* Color vino */
+    background-image: none !important; /* Eliminar cualquier gradiente o imagen */
+    border-bottom: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+/* Aseguramos que todos los elementos dentro del header tengan el color correcto */
+.app-shell-header * {
+    color: white !important;
+}
+
+/* Corregimos el footer para eliminar el fondo crema */
+.footer-modern {
+    background-color: #4d1d1d !important; /* Versión más oscura del color vino */
+    background-image: none !important; /* Eliminar cualquier gradiente o imagen */
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    color: #ffffff !important;
+}
+
+/* Aseguramos que todos los elementos dentro del footer tengan el color correcto */
+.footer-modern * {
+    color: rgba(255,255,255,0.9) !important;
+}
+
+/* Corregimos el contenido principal para evitar el fondo crema */
+.main-content {
+    background: transparent !important;
+}
+
+/* Corregimos el contenedor principal para evitar fondos no deseados */
+#app, .container, .content-fade {
+    background-color: transparent !important;
+}
+
+/* Modificación del fondo global del body */
+body {
+    background: radial-gradient(circle at 20% 20%, 
+                rgba(245, 222, 179, 0.7), 
+                rgba(211, 191, 154, 0.5) 40%, 
+                rgba(255, 255, 255, 0.95)) !important;
+    background-attachment: fixed !important;
+}
+
+/* Corregimos los modales y sus fondos */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-content {
+    background: white !important;
+    position: relative !important; /* Asegurar que tenga su propio contexto de apilamiento */
+}
+
+/* Eliminar cualquier fondo fijo que pueda estar causando problemas */
+body::before, body::after,
+.app-shell-header::before, .app-shell-header::after,
+.footer-modern::before, .footer-modern::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Estilos para los botones en el header */
+.app-shell-header .nav-soft-btn {
+    background: var(--cn-accent) !important;
+    color: var(--cn-dark) !important;
+}
+
+/* Asegurar que el footer tiene texto blanco */
+.footer-modern p, .footer-modern small {
+    color: rgba(255,255,255,0.9) !important;
+}
