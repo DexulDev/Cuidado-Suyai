@@ -449,6 +449,9 @@
                     <p class="text-center small fw-semibold mb-0" style="color: white !important;">
                         Educar Para la Vida • Matias Oyarzo • Ignacio Vidal • Simon Morales
                     </p>
+                    <p class="text-center small mt-1" style="color: white !important; opacity: 0.5; font-size: 0.7rem;">
+                        <a href="https://github.com/DexulDev/Cuidado-Suyai" target="_blank" style="color: rgba(245,222,179,0.8) !important; text-decoration: none;">Código fuente</a>
+                    </p>
                     <p class="text-center small mt-2" style="color: white !important; opacity: 0.75;">© {{ date('Y') }} Cuidado Suyai. Todos los derechos reservados.</p>
                 </div>
             </div>
