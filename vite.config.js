@@ -56,8 +56,6 @@ export default defineConfig({
                     bootstrap: ['bootstrap'],
                     modals: [
                         'resources/js/modal-sin-backdrop.js',
-                        'resources/js/modal-fix-definitivo.js',
-                        'resources/js/global-modal-system.js'
                     ],
                     admin: [
                         'resources/js/components/admin/AdminDashboard.vue',
