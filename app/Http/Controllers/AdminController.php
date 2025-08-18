@@ -9,12 +9,12 @@ use App\Models\FoodImage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -90,8 +90,6 @@ class AdminController extends Controller
 
     public function updatePassword(Request $request)
     {
-        \Illuminate\Support\Facades\Log::info('Password update request received', ['request' => $request->all()]);
-        
         // Simplify validation - only require minimum 5 characters and matching confirmation
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'new_password' => 'required|min:5|same:new_password_confirmation',
@@ -99,8 +97,6 @@ class AdminController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Illuminate\Support\Facades\Log::warning('Password validation failed', ['errors' => $validator->errors()]);
-            
             if ($request->wantsJson()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
@@ -115,8 +111,6 @@ class AdminController extends Controller
 
             Session::forget('needs_password_change');
             Session::put('admin_authenticated', true);
-            
-            \Illuminate\Support\Facades\Log::info('Password updated successfully');
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -127,8 +121,7 @@ class AdminController extends Controller
             
             return redirect()->route('admin.dashboard')->with('success', 'Contraseña actualizada correctamente');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error updating password', ['error' => $e->getMessage()]);
-            
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -197,12 +190,6 @@ class AdminController extends Controller
 
     public function storeFood(Request $request)
     {
-        Log::info('storeFood init', [
-            'all_files_keys' => array_keys($request->allFiles()),
-            'has_images' => $request->hasFile('images'),
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-        ]);
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -225,10 +212,6 @@ class AdminController extends Controller
 
         $food = Food::create($data);
 
-        if (!$request->hasFile('images')) {
-            Log::warning('storeFood without images payload', [ 'FILES_GLOBAL' => $_FILES ]);
-        }
-
         if ($request->hasFile('images')) {
             // Asegurar directorio
             if (!Storage::disk('public')->exists('foods')) {
@@ -236,10 +219,6 @@ class AdminController extends Controller
             }
             $ts = time();
             foreach ($request->file('images') as $index => $image) {
-                if (!$image->isValid()) {
-                    Log::error('Imagen inválida en storeFood', ['index' => $index, 'error' => $image->getErrorMessage()]);
-                    continue;
-                }
                 try {
                     $ext = strtolower($image->getClientOriginalExtension() ?: 'jpg');
                     $filename = 'food_' . $food->id . '_' . $ts . '_' . $index . '.' . $ext;
@@ -259,20 +238,11 @@ class AdminController extends Controller
             $food->save();
         }
 
-        Log::info('storeFood end', [ 'food_id' => $food->id, 'images_count' => $food->images()->count() ]);
         return redirect()->route('admin.dashboard')->with('success', 'Comida agregada correctamente');
     }
 
     public function updateFood(Request $request, Food $food)
     {
-        // Debug: Log de información de la request
-        Log::info('updateFood called', [
-            'food_id' => $food->id,
-            'has_new_images' => $request->hasFile('new_images'),
-            'new_images_count' => $request->file('new_images') ? count($request->file('new_images')) : 0,
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size')
-        ]);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -373,12 +343,6 @@ class AdminController extends Controller
 
     public function storeExercise(Request $request)
     {
-        Log::info('storeExercise init', [
-            'all_files_keys' => array_keys($request->allFiles()),
-            'has_images' => $request->hasFile('images'),
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-        ]);
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -430,7 +394,6 @@ class AdminController extends Controller
             }
             $exercise->save();
         }
-        Log::info('storeExercise end', [ 'exercise_id' => $exercise->id, 'images_count' => $exercise->images()->count() ]);
         return redirect()->route('admin.dashboard')->with('success', 'Ejercicio agregado correctamente');
     }
 
@@ -640,7 +603,6 @@ class AdminController extends Controller
                         $exercise->image_url = $filename;
                     }
                     
-                    Log::info('Imagen ejercicio agregada exitosamente: ' . $publicStoragePath . '/' . $filename);
                 } catch (\Exception $e) {
                     Log::error('Error agregando imagen ejercicio: ' . $e->getMessage());
                 }
