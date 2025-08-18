@@ -61,7 +61,7 @@
       <div class="col-md-6">
         <label class="form-label small fw-semibold">Imagen</label>
         <input type="file" name="image" accept="image/*" class="form-control" />
-        <div class="form-text">JPG/PNG/GIF máx 2MB</div>
+        <div class="form-text">JPG/PNG/GIF máx 5MB</div>
       </div>
       <div class="col-12">
         <label class="form-label small fw-semibold">Descripción *</label>

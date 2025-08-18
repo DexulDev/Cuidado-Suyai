@@ -66,7 +66,7 @@
       <div class="col-12">
         <label class="form-label small fw-semibold">Imágenes (múltiples)</label>
         <input type="file" name="images[]" multiple accept="image/*" class="form-control" />
-        <div class="form-text">JPG/PNG/GIF máx 2MB c/u</div>
+        <div class="form-text">JPG/PNG/GIF máx 5MB c/u</div>
       </div>
       <div class="col-12 d-flex justify-content-end gap-2 mt-2">
         <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
