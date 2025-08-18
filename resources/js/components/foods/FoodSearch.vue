@@ -412,6 +412,9 @@ export default {
 .food-search.card {
   background-color: #f8f9fa !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: none;
+  position: relative;
+  z-index: 1;
 }
 
 .recipe-card {
@@ -540,6 +543,7 @@ export default {
 
 .input-group {
   position: relative;
+  z-index: 10;
 }
 
 .input-group:focus-within::after {
@@ -550,7 +554,7 @@ export default {
   right: -4px;
   bottom: -4px;
   border-radius: 6px;
-  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.164);
+  box-shadow: 0 0 0 0.25rem rgba(139, 0, 0, 0.2);
   pointer-events: none;
   z-index: -1;
 }
