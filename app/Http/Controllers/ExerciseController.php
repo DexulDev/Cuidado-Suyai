@@ -74,9 +74,19 @@ class ExerciseController extends Controller
     private function saveSearch(Request $request, string $type, int $resultsCount)
     {
         try {
+            $raw = $request->query('query');
+            $searchTerm = is_string($raw) ? trim($raw) : null;
+            if (!$searchTerm || $searchTerm === '') { return; }
+            $searchTerm = preg_replace('/\s+/', ' ', $searchTerm);
+            if (!preg_match('/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9]/u', $searchTerm)) { return; }
+            $recentExists = Search::where('search_type', $type)
+                ->where('query', $searchTerm)
+                ->where('ip_address', $request->ip())
+                ->where('created_at', '>', now()->subSeconds(60))
+                ->exists();
+            if ($recentExists) { return; }
+
             $filters = [];
-            
-            // Collect all search parameters except query and main filters
             foreach ($request->all() as $key => $value) {
                 if (!in_array($key, ['query', 'category', 'muscle_group', 'difficulty']) && !empty($value)) {
                     $filters[$key] = $value;
@@ -85,16 +95,15 @@ class ExerciseController extends Controller
 
             Search::create([
                 'search_type' => $type,
-                'query' => $request->query('query'),
+                'query' => $searchTerm,
                 'category' => $request->query('category'),
                 'difficulty' => $request->query('difficulty'),
                 'results_count' => $resultsCount,
                 'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
+                'user_agent' => substr((string)$request->userAgent(),0,255),
                 'filters' => !empty($filters) ? $filters : null
             ]);
         } catch (\Exception $e) {
-            // Log error but don't break the search functionality
             Log::error('Failed to save search: ' . $e->getMessage());
         }
     }
