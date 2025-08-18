@@ -197,6 +197,12 @@ class AdminController extends Controller
 
     public function storeFood(Request $request)
     {
+        Log::info('storeFood init', [
+            'all_files_keys' => array_keys($request->allFiles()),
+            'has_images' => $request->hasFile('images'),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+        ]);
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -219,11 +225,25 @@ class AdminController extends Controller
 
         $food = Food::create($data);
 
+        if (!$request->hasFile('images')) {
+            Log::warning('storeFood without images payload', [ 'FILES_GLOBAL' => $_FILES ]);
+        }
+
         if ($request->hasFile('images')) {
+            // Asegurar directorio
+            if (!Storage::disk('public')->exists('foods')) {
+                Storage::disk('public')->makeDirectory('foods');
+            }
+            $ts = time();
             foreach ($request->file('images') as $index => $image) {
+                if (!$image->isValid()) {
+                    Log::error('Imagen inválida en storeFood', ['index' => $index, 'error' => $image->getErrorMessage()]);
+                    continue;
+                }
                 try {
-                    $filename = 'food_' . $food->id . '_' . time() . '_' . $index . '.' . $image->getClientOriginalExtension();
-                    $image->storeAs('public/foods', $filename);
+                    $ext = strtolower($image->getClientOriginalExtension() ?: 'jpg');
+                    $filename = 'food_' . $food->id . '_' . $ts . '_' . $index . '.' . $ext;
+                    Storage::disk('public')->putFileAs('foods', $image, $filename);
                     FoodImage::create([
                         'food_id' => $food->id,
                         'path' => $filename,
@@ -233,12 +253,13 @@ class AdminController extends Controller
                         $food->image_url = $filename;
                     }
                 } catch (\Exception $e) {
-                    Log::error('Error al guardar imagen de comida: ' . $e->getMessage());
+                    Log::error('Error al guardar imagen de comida', [ 'msg' => $e->getMessage() ]);
                 }
             }
             $food->save();
         }
 
+        Log::info('storeFood end', [ 'food_id' => $food->id, 'images_count' => $food->images()->count() ]);
         return redirect()->route('admin.dashboard')->with('success', 'Comida agregada correctamente');
     }
 
@@ -352,6 +373,12 @@ class AdminController extends Controller
 
     public function storeExercise(Request $request)
     {
+        Log::info('storeExercise init', [
+            'all_files_keys' => array_keys($request->allFiles()),
+            'has_images' => $request->hasFile('images'),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+        ]);
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -362,60 +389,48 @@ class AdminController extends Controller
             'equipment' => 'nullable|string',
             'muscle_group' => 'nullable|string',
             'intensity' => 'nullable|string',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
 
         $data = $request->except('images');
         $data['is_active'] = true;
-        $data['image_url'] = null; // Se establecerá después de guardar las imágenes
+        $data['image_url'] = null;
 
-        // Crear el ejercicio
         $exercise = Exercise::create($data);
 
-        // Manejar las imágenes
+        if (!$request->hasFile('images')) {
+            Log::warning('storeExercise without images payload', ['FILES_GLOBAL' => $_FILES]);
+        }
+
         if ($request->hasFile('images')) {
+            if (!Storage::disk('public')->exists('exercises')) {
+                Storage::disk('public')->makeDirectory('exercises');
+            }
+            $ts = time();
             foreach ($request->file('images') as $index => $image) {
+                if (!$image->isValid()) {
+                    Log::error('Imagen inválida en storeExercise', ['index' => $index, 'error' => $image->getErrorMessage()]);
+                    continue;
+                }
                 try {
-                    $filename = 'exercise_' . $exercise->id . '_' . time() . '_' . $index . '.' . $image->getClientOriginalExtension();
-                    
-                    // Asegurar que el directorio público existe
-                    $publicStoragePath = public_path('storage');
-                    $exercisesPath = $publicStoragePath . '/exercises';
-                    
-                    if (!File::exists($publicStoragePath)) {
-                        File::makeDirectory($publicStoragePath, 0755, true);
-                    }
-                    
-                    if (!File::exists($exercisesPath)) {
-                        File::makeDirectory($exercisesPath, 0755, true);
-                    }
-                    
-                    // Mover la imagen al directorio público
-                    $image->move($exercisesPath, $filename);
-                    
-                    // Establecer permisos correctos
-                    chmod($exercisesPath . '/' . $filename, 0644);
-                    
-                    // Crear entrada en la tabla de imágenes
+                    $ext = strtolower($image->getClientOriginalExtension() ?: 'jpg');
+                    $filename = 'exercise_' . $exercise->id . '_' . $ts . '_' . $index . '.' . $ext;
+                    Storage::disk('public')->putFileAs('exercises', $image, $filename);
                     ExerciseImage::create([
                         'exercise_id' => $exercise->id,
                         'path' => $filename,
                         'position' => $index,
                     ]);
-                    
-                    // Si es la primera imagen, establecerla como imagen principal
                     if ($index === 0) {
                         $exercise->image_url = $filename;
-                        $exercise->save();
                     }
-                    
-                    Log::info('Imagen ejercicio guardada exitosamente: ' . $exercisesPath . '/' . $filename);
                 } catch (\Exception $e) {
-                    Log::error('Error guardando imagen ejercicio: ' . $e->getMessage());
+                    Log::error('Error guardando imagen ejercicio', ['msg' => $e->getMessage()]);
                 }
             }
+            $exercise->save();
         }
-
+        Log::info('storeExercise end', [ 'exercise_id' => $exercise->id, 'images_count' => $exercise->images()->count() ]);
         return redirect()->route('admin.dashboard')->with('success', 'Ejercicio agregado correctamente');
     }
 

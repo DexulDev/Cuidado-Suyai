@@ -119,10 +119,18 @@
               <div class="mt-4">
                 <label class="form-label small">Imágenes</label>
                 <div class="d-flex flex-wrap gap-3" @dragover.prevent>
+                  <!-- Imágenes existentes -->
                   <div v-for="img in sortedImages" :key="img.id" class="position-relative" draggable="true" @dragstart="dragStart(img)" @drop.prevent="dropImage(img)">
                     <img :src="storageFood(img.path)" loading="lazy" class="rounded shadow-sm" style="width:110px; height:110px; object-fit:cover;">
                     <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" style="--bs-btn-padding-y:.1rem;--bs-btn-padding-x:.35rem;" @click="toggleDelete(img)"><i class="bi" :class="img._delete ? 'bi-arrow-counterclockwise':'bi-x'"></i></button>
                   </div>
+                  <!-- Previews nuevas (no guardadas aún) -->
+                  <div v-for="p in newImagePreviews" :key="'newf-'+p.id" class="position-relative">
+                    <img :src="p.url" class="rounded shadow-sm border border-2 border-primary" style="width:110px;height:110px;object-fit:cover;opacity:.9;">
+                    <span class="badge bg-primary position-absolute bottom-0 start-0 m-1">Nuevo</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0" style="--bs-btn-padding-y:.1rem;--bs-btn-padding-x:.35rem;" @click="removeNewImage(p.id)"><i class="bi bi-x"></i></button>
+                  </div>
+                  <!-- Botón añadir -->
                   <label class="d-flex flex-column justify-content-center align-items-center border rounded border-dashed shadow-sm" style="width:110px;height:110px; cursor:pointer; gap:.25rem; background:var(--cn-light);">
                     <i class="bi bi-plus-lg"></i>
                     <span class="small">Añadir</span>
@@ -194,10 +202,18 @@
                 <div class="col-12">
                   <label class="form-label small">Imágenes</label>
                   <div class="d-flex flex-wrap gap-3" @dragover.prevent>
+                    <!-- Imágenes existentes ejercicio -->
                     <div v-for="img in sortedExerciseImages" :key="img.id" class="position-relative" draggable="true" @dragstart="dragStart(img)" @drop.prevent="dropExerciseImage(img)">
                       <img :src="`/storage/exercises/${img.path}`" loading="lazy" class="rounded shadow-sm" style="width:110px; height:110px; object-fit:cover;">
                       <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" style="--bs-btn-padding-y:.1rem;--bs-btn-padding-x:.35rem;" @click="toggleExerciseDelete(img)"><i class="bi" :class="img._delete ? 'bi-arrow-counterclockwise':'bi-x'"></i></button>
                     </div>
+                    <!-- Previews nuevas ejercicios -->
+                    <div v-for="p in newExerciseImagePreviews" :key="'newx-'+p.id" class="position-relative">
+                      <img :src="p.url" class="rounded shadow-sm border border-2 border-primary" style="width:110px;height:110px;object-fit:cover;opacity:.9;">
+                      <span class="badge bg-primary position-absolute bottom-0 start-0 m-1">Nuevo</span>
+                      <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0" style="--bs-btn-padding-y:.1rem;--bs-btn-padding-x:.35rem;" @click="removeNewExerciseImage(p.id)"><i class="bi bi-x"></i></button>
+                    </div>
+                    <!-- Botón añadir -->
                     <label class="d-flex flex-column justify-content-center align-items-center border rounded border-dashed shadow-sm" style="width:110px;height:110px; cursor:pointer; gap:.25rem; background:var(--cn-light);">
                       <i class="bi bi-plus-lg"></i>
                       <span class="small">Añadir</span>
@@ -242,12 +258,16 @@ export default {
       foodForm: null, 
       exerciseForm: null, 
       newImages: [], 
+      newImagePreviews: [],
       deletedImages: new Set(), 
       dragSource: null, 
       saving: false, 
       newExerciseImages: [], 
+      newExerciseImagePreviews: [],
       deletedExerciseImages: new Set(),
-      showSearchAnalytics: false
+      showSearchAnalytics: false,
+      foodModalInstance: null,
+      exerciseModalInstance: null
     };
   },
   computed: {
@@ -264,29 +284,17 @@ export default {
     showModal(ref){ 
       const el = this.$refs[ref]; 
       if (!el) return;
-      
-      // Mostrar modal de admin con backdrop para evitar clicks accidentales
       const bootstrap = window.bootstrap;
       if (bootstrap && bootstrap.Modal) {
         try {
-          const modal = new bootstrap.Modal(el, {
-            backdrop: true,
-            keyboard: true,
-            focus: true
-          });
-          modal.show();
-        } catch (err) {
-          console.error('Error al mostrar modal:', err);
-          // Fallback manual
-          el.style.display = 'block';
-          el.classList.add('show');
-          document.body.classList.add('modal-open');
-          
-          // Crear backdrop manual
-          const backdrop = document.createElement('div');
-          backdrop.className = 'modal-backdrop fade show';
-          document.body.appendChild(backdrop);
-        }
+          if (ref==='foodModal') {
+            this.foodModalInstance = this.foodModalInstance || new bootstrap.Modal(el,{backdrop:true,keyboard:true,focus:true});
+            this.foodModalInstance.show();
+          } else if (ref==='exerciseModal') {
+            this.exerciseModalInstance = this.exerciseModalInstance || new bootstrap.Modal(el,{backdrop:true,keyboard:true,focus:true});
+            this.exerciseModalInstance.show();
+          }
+        } catch (err) { /* fallback minimal */ el.style.display='block'; el.classList.add('show'); document.body.classList.add('modal-open'); }
       }
     },
     
@@ -341,9 +349,94 @@ export default {
     dragStart(img){ this.dragSource = img; },
     dropImage(target){ if(!this.dragSource || this.dragSource.id===target.id) return; const order = this.sortedImages; const from=order.findIndex(i=>i.id===this.dragSource.id); const to=order.findIndex(i=>i.id===target.id); order.splice(to,0, order.splice(from,1)[0]); order.forEach((i,idx)=> i.position=idx); this.foodForm.images = order; },
     dropExerciseImage(target){ if(!this.dragSource || this.dragSource.id===target.id) return; const order = this.sortedExerciseImages; const from=order.findIndex(i=>i.id===this.dragSource.id); const to=order.findIndex(i=>i.id===target.id); order.splice(to,0, order.splice(from,1)[0]); order.forEach((i,idx)=> i.position=idx); this.exerciseForm.images = order; },
-    queueNewImages(e){ this.newImages.push(...e.target.files); },
-    queueNewExerciseImages(e){ this.newExerciseImages.push(...e.target.files); },
-    queueExerciseImage(e){ this.newExerciseImage = e.target.files[0]; },
+    queueNewImages(e){ 
+      const files = Array.from(e.target.files || []);
+      files.forEach(f=>{ this.newImages.push(f); this.newImagePreviews.push({ id: Math.random().toString(36).slice(2), url: URL.createObjectURL(f), _file: f }); });
+      e.target.value='';
+    },
+    queueNewExerciseImages(e){ 
+      const files = Array.from(e.target.files || []);
+      files.forEach(f=>{ this.newExerciseImages.push(f); this.newExerciseImagePreviews.push({ id: Math.random().toString(36).slice(2), url: URL.createObjectURL(f), _file: f }); });
+      e.target.value='';
+    },
+    showModal(ref){ 
+      const el = this.$refs[ref]; 
+      if (!el) return;
+      const bootstrap = window.bootstrap;
+      if (bootstrap && bootstrap.Modal) {
+        try {
+          if (ref==='foodModal') {
+            this.foodModalInstance = this.foodModalInstance || new bootstrap.Modal(el,{backdrop:true,keyboard:true,focus:true});
+            this.foodModalInstance.show();
+          } else if (ref==='exerciseModal') {
+            this.exerciseModalInstance = this.exerciseModalInstance || new bootstrap.Modal(el,{backdrop:true,keyboard:true,focus:true});
+            this.exerciseModalInstance.show();
+          }
+        } catch (err) { /* fallback minimal */ el.style.display='block'; el.classList.add('show'); document.body.classList.add('modal-open'); }
+      }
+    },
+    
+    cleanupModals() {
+      try {
+        // Eliminar todos los backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+          backdrop.remove();
+        });
+        
+        // Limpiar clases y estilos del body
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        
+        // Cerrar modales abiertos
+        document.querySelectorAll('.modal.show').forEach(modal => {
+          if (window.bootstrap && window.bootstrap.Modal && window.bootstrap.Modal.getInstance) {
+            try {
+              const modalInstance = window.bootstrap.Modal.getInstance(modal);
+              if (modalInstance) {
+                modalInstance.hide();
+              } else {
+                // Fallback manual
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                // NO establecer aria-hidden en modales que pueden tener foco
+              }
+            } catch (e) {
+              // Fallback si falla getInstance
+              modal.classList.remove('show');
+              modal.style.display = 'none';
+              // NO establecer aria-hidden en modales que pueden tener foco
+            }
+          } else {
+            // Limpieza manual si Bootstrap no está disponible
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            // NO establecer aria-hidden en modales que pueden tener foco
+          }
+        });
+      } catch (err) {
+        // Si todo falla, al menos remover las clases básicas
+        document.querySelectorAll('.modal.show').forEach(modal => {
+          modal.classList.remove('show');
+          modal.style.display = 'none';
+        });
+      }
+    },
+    toggleDelete(img){ img._delete = !img._delete; if(img._delete) this.deletedImages.add(img.id); else this.deletedImages.delete(img.id); },
+    toggleExerciseDelete(img){ img._delete = !img._delete; if(img._delete) this.deletedExerciseImages.add(img.id); else this.deletedExerciseImages.delete(img.id); },
+    dragStart(img){ this.dragSource = img; },
+    dropImage(target){ if(!this.dragSource || this.dragSource.id===target.id) return; const order = this.sortedImages; const from=order.findIndex(i=>i.id===this.dragSource.id); const to=order.findIndex(i=>i.id===target.id); order.splice(to,0, order.splice(from,1)[0]); order.forEach((i,idx)=> i.position=idx); this.foodForm.images = order; },
+    dropExerciseImage(target){ if(!this.dragSource || this.dragSource.id===target.id) return; const order = this.sortedExerciseImages; const from=order.findIndex(i=>i.id===this.dragSource.id); const to=order.findIndex(i=>i.id===target.id); order.splice(to,0, order.splice(from,1)[0]); order.forEach((i,idx)=> i.position=idx); this.exerciseForm.images = order; },
+    queueNewImages(e){ 
+      const files = Array.from(e.target.files || []);
+      files.forEach(f=>{ this.newImages.push(f); this.newImagePreviews.push({ id: Math.random().toString(36).slice(2), url: URL.createObjectURL(f), _file: f }); });
+      e.target.value='';
+    },
+    queueNewExerciseImages(e){ 
+      const files = Array.from(e.target.files || []);
+      files.forEach(f=>{ this.newExerciseImages.push(f); this.newExerciseImagePreviews.push({ id: Math.random().toString(36).slice(2), url: URL.createObjectURL(f), _file: f }); });
+      e.target.value='';
+    },
     async submitFood(){
       this.saving=true;
       const fd = new FormData();
@@ -353,81 +446,35 @@ export default {
       this.newImages.forEach(f=> fd.append('new_images[]', f));
       fd.append('_token', this.csrf); fd.append('_method','PATCH');
       try {
-        const res = await fetch(this.routes.updateFood.replace(':id', this.foodForm.id), { 
-          method:'POST', 
-          body: fd,
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        });
-        
-        // Verificar si la respuesta es JSON válida
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('El servidor devolvió una respuesta no válida (HTML en lugar de JSON)');
-        }
-        
+        const res = await fetch(this.routes.updateFood.replace(':id', this.foodForm.id), { method:'POST', body: fd, headers: { 'Accept':'application/json','X-Requested-With':'XMLHttpRequest' } });
         const json = await res.json();
         if(res.ok){ 
           const idx = this.foods.findIndex(f=>f.id===this.foodForm.id); 
           if(idx>-1) this.foods[idx]= json.food; 
-          this.closeModal('#foodAdminModal'); 
-        } else {
-          // Manejar errores de validación
-          if (json.errors) {
-            alert('Error de validación: ' + Object.values(json.errors).flat().join(', '));
-          } else {
-            alert('Error: ' + (json.message || 'Error desconocido'));
-          }
-        }
-      } catch(e){ 
-        alert('Error al actualizar la comida: ' + e.message);
-      }
+          this.newImages=[]; this.newImagePreviews=[]; this.deletedImages.clear();
+          if(this.foodModalInstance) this.foodModalInstance.hide(); else this.closeModal('#foodAdminModal');
+        } else { alert('Error: ' + (json.message || 'Validación')); }
+      } catch(e){ alert('Error al actualizar la comida: ' + e.message); }
       this.saving=false;
     },
     async submitExercise(){
       this.saving=true;
       const fd = new FormData();
       ['name','category','difficulty','duration','calories_burned','equipment','muscle_group','intensity','description'].forEach(f=> fd.append(f, this.exerciseForm[f]||''));
-      if(this.newExerciseImages && this.newExerciseImages.length) {
-        this.newExerciseImages.forEach(f=> fd.append('new_images[]', f));
-      }
+      if(this.newExerciseImages.length) this.newExerciseImages.forEach(f=> fd.append('new_images[]', f));
       this.deletedExerciseImages.forEach(i=> fd.append('delete_images[]', i));
       fd.append('image_order', this.sortedExerciseImages.filter(i=>!i._delete).map(i=>i.id).join(','));
       fd.append('_token', this.csrf); fd.append('_method','PATCH');
       try {
-        const res = await fetch(this.routes.updateExercise.replace(':id', this.exerciseForm.id), { 
-          method:'POST', 
-          body: fd,
-          headers: {
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        });
-        
-        // Verificar si la respuesta es JSON válida
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('El servidor devolvió una respuesta no válida (HTML en lugar de JSON)');
-        }
-        
+        const res = await fetch(this.routes.updateExercise.replace(':id', this.exerciseForm.id), { method:'POST', body: fd, headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'} });
         const json = await res.json();
-        if(res.ok){ 
-          const idx = this.exercises.findIndex(e=>e.id===this.exerciseForm.id); 
-          if(idx>-1) this.exercises[idx]= json.exercise; 
-          this.closeModal('#exerciseAdminModal'); 
-        } else {
-          // Manejar errores de validación
-          if (json.errors) {
-            alert('Error de validación: ' + Object.values(json.errors).flat().join(', '));
-          } else {
-            alert('Error: ' + (json.message || 'Error desconocido'));
-          }
-        }
-      } catch(e){ 
-        alert('Error al actualizar el ejercicio: ' + e.message);
-      }
+        if(res.ok){
+          const idx = this.exercises.findIndex(e=>e.id===this.exerciseForm.id);
+            if(idx>-1) this.exercises[idx]= json.exercise;
+          this.newExerciseImages=[]; this.newExerciseImagePreviews=[]; this.deletedExerciseImages.clear();
+          if(this.exerciseModalInstance) this.exerciseModalInstance.hide(); else this.closeModal('#exerciseAdminModal');
+        } else { alert('Error: '+(json.message||'Validación')); }
+      } catch(e){ alert('Error al actualizar el ejercicio: '+e.message); }
       this.saving=false;
     },
     closeModal(sel){ 
@@ -469,7 +516,17 @@ export default {
     confirmDelete(e){ if(!confirm('¿Eliminar definitivamente?')) return; e.target.submit(); },
     openSearchTelemetry() {
       this.showSearchAnalytics = true;
-    }
+    },
+    removeNewImage(id){
+      const idxP = this.newImagePreviews.findIndex(p=>p.id===id); if(idxP>-1){ URL.revokeObjectURL(this.newImagePreviews[idxP].url); this.newImagePreviews.splice(idxP,1); }
+      // remover file correspondiente (mismo índice si orden de push coincide)
+      // simple: reconstruir newImages excluyendo por índice
+      this.newImages = this.newImages.filter((_,i)=> i < this.newImagePreviews.length+1); // best-effort
+    },
+    removeNewExerciseImage(id){
+      const idxP = this.newExerciseImagePreviews.findIndex(p=>p.id===id); if(idxP>-1){ URL.revokeObjectURL(this.newExerciseImagePreviews[idxP].url); this.newExerciseImagePreviews.splice(idxP,1); }
+      this.newExerciseImages = this.newExerciseImages.filter((_,i)=> i < this.newExerciseImagePreviews.length+1);
+    },
   }
 };
 </script>
