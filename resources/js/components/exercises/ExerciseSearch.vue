@@ -229,7 +229,9 @@
 
                 <!-- Descripción -->
                 <div class="recipe-description mb-4 surface-blur p-3 rounded" v-if="selectedExercise.description">
-                  <p>{{ selectedExercise.description }}</p>
+                  <div v-for="(line, idx) in splitLines(selectedExercise.description)" :key="idx" class="mb-2">
+                    {{ line }}
+                  </div>
                 </div>
 
                 <!-- Grid de métricas (análoga a nutrición) -->
