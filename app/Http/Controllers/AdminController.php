@@ -9,12 +9,12 @@ use App\Models\FoodImage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -97,6 +97,8 @@ class AdminController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Illuminate\Support\Facades\Log::warning('Password validation failed', ['errors' => $validator->errors()]);
+            
             if ($request->wantsJson()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
@@ -111,7 +113,8 @@ class AdminController extends Controller
 
             Session::forget('needs_password_change');
             Session::put('admin_authenticated', true);
-
+            
+            
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true, 
@@ -121,7 +124,8 @@ class AdminController extends Controller
             
             return redirect()->route('admin.dashboard')->with('success', 'Contraseña actualizada correctamente');
         } catch (\Exception $e) {
-
+            \Illuminate\Support\Facades\Log::error('Error updating password', ['error' => $e->getMessage()]);
+            
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -138,7 +142,7 @@ class AdminController extends Controller
         $foodsCount = Food::count();
         $exercisesCount = Exercise::count();
         $foods = Food::with('images')->orderByDesc('created_at')->get();
-        $exercises = Exercise::orderByDesc('created_at')->get();
+        $exercises = Exercise::with('images')->orderByDesc('created_at')->get();
         
         // Estadísticas de búsquedas
         $searchesCount = \App\Models\Search::count();
@@ -212,6 +216,10 @@ class AdminController extends Controller
 
         $food = Food::create($data);
 
+        if (!$request->hasFile('images')) {
+            Log::warning('storeFood without images payload', [ 'FILES_GLOBAL' => $_FILES ]);
+        }
+
         if ($request->hasFile('images')) {
             // Asegurar directorio
             if (!Storage::disk('public')->exists('foods')) {
@@ -219,6 +227,10 @@ class AdminController extends Controller
             }
             $ts = time();
             foreach ($request->file('images') as $index => $image) {
+                if (!$image->isValid()) {
+                    Log::error('Imagen inválida en storeFood', ['index' => $index, 'error' => $image->getErrorMessage()]);
+                    continue;
+                }
                 try {
                     $ext = strtolower($image->getClientOriginalExtension() ?: 'jpg');
                     $filename = 'food_' . $food->id . '_' . $ts . '_' . $index . '.' . $ext;
@@ -243,6 +255,14 @@ class AdminController extends Controller
 
     public function updateFood(Request $request, Food $food)
     {
+        // Debug: Log de información de la request
+        Log::info('updateFood called', [
+            'food_id' => $food->id,
+            'has_new_images' => $request->hasFile('new_images'),
+            'new_images_count' => $request->file('new_images') ? count($request->file('new_images')) : 0,
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size')
+        ]);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -279,19 +299,15 @@ class AdminController extends Controller
 
         // Add new images
         if ($request->hasFile('new_images')) {
+            if (!Storage::disk('public')->exists('foods')) {
+                Storage::disk('public')->makeDirectory('foods');
+            }
             $currentMax = (int) FoodImage::where('food_id',$food->id)->max('position');
             foreach ($request->file('new_images') as $index => $image) {
                 try {
-                    $filename = 'food_' . $food->id . '_' . time() . '_' . $index . '.' . $image->getClientOriginalExtension();
-                    Storage::disk('public')->putFileAs('foods', $image, $filename, 'public');
-                    try {
-                        if (class_exists('Spatie\\LaravelImageOptimizer\\Facades\\ImageOptimizer')) {
-                            $optimizer = resolve('Spatie\\LaravelImageOptimizer\\Facades\\ImageOptimizer');
-                            if (method_exists($optimizer, 'optimize')) {
-                                $optimizer::optimize(storage_path('app/public/foods/' . $filename));
-                            }
-                        }
-                    } catch (\Throwable $e) {}
+                    $ext = strtolower($image->getClientOriginalExtension() ?: 'jpg');
+                    $filename = 'food_' . $food->id . '_' . time() . '_' . $index . '.' . $ext;
+                    Storage::disk('public')->putFileAs('foods', $image, $filename);
                     FoodImage::create([
                         'food_id' => $food->id,
                         'path' => $filename,
@@ -343,6 +359,12 @@ class AdminController extends Controller
 
     public function storeExercise(Request $request)
     {
+        Log::info('storeExercise init', [
+            'all_files_keys' => array_keys($request->allFiles()),
+            'has_images' => $request->hasFile('images'),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+        ]);
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -394,135 +416,21 @@ class AdminController extends Controller
             }
             $exercise->save();
         }
+        Log::info('storeExercise end', [ 'exercise_id' => $exercise->id, 'images_count' => $exercise->images()->count() ]);
         return redirect()->route('admin.dashboard')->with('success', 'Ejercicio agregado correctamente');
-    }
-
-    public function destroyFoodImage(FoodImage $image)
-    {
-        $foodId = $image->food_id;
-        Storage::disk('public')->delete('foods/' . $image->path);
-        $image->delete();
-        // Ajustar posiciones consecutivas
-        $remaining = FoodImage::where('food_id',$foodId)->orderBy('position')->get();
-        foreach ($remaining as $i => $img) { $img->update(['position' => $i]); }
-        $food = Food::find($foodId);
-        if ($food) {
-            $first = FoodImage::where('food_id',$foodId)->orderBy('position')->first();
-            $food->image_url = $first?->path;
-            $food->save();
-        }
-        return response()->json(['message' => 'Imagen eliminada']);
-    }
-    
-    public function destroyExerciseImage(ExerciseImage $image)
-    {
-        $exerciseId = $image->exercise_id;
-        Storage::disk('public')->delete('exercises/' . $image->path);
-        $image->delete();
-        // Ajustar posiciones consecutivas
-        $remaining = ExerciseImage::where('exercise_id', $exerciseId)->orderBy('position')->get();
-        foreach ($remaining as $i => $img) { $img->update(['position' => $i]); }
-        $exercise = Exercise::find($exerciseId);
-        if ($exercise) {
-            $first = ExerciseImage::where('exercise_id', $exerciseId)->orderBy('position')->first();
-            $exercise->image_url = $first?->path;
-            $exercise->save();
-        }
-        return response()->json(['message' => 'Imagen eliminada']);
-    }
-
-    public function apiFoods()
-    {
-        return Food::with('images')->orderByDesc('created_at')->get();
-    }
-
-    public function apiExercises()
-    {
-        return Exercise::with('images')->orderByDesc('created_at')->get();
-    }
-    
-    public function apiSearches(Request $request)
-    {
-        $searchType = $request->input('searchType');
-        $category = $request->input('category');
-        $period = $request->input('period');
-        $sort = $request->input('sort', 'newest');
-        $page = $request->input('page', 1);
-        $perPage = 15;
-        
-        $query = \App\Models\Search::query();
-        
-        // Filters
-        if ($searchType) {
-            $query->where('search_type', $searchType);
-        }
-        
-        if ($category) {
-            $query->where('category', $category);
-        }
-        
-        // Period filter
-        if ($period) {
-            switch ($period) {
-                case 'today':
-                    $query->whereDate('created_at', now()->toDateString());
-                    break;
-                case 'week':
-                    $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
-                    break;
-            }
-        }
-        
-        // Sorting
-        switch ($sort) {
-            case 'oldest':
-                $query->orderBy('created_at');
-                break;
-            case 'popular':
-                $query->orderByDesc('results_count');
-                break;
-            default: // newest
-                $query->orderByDesc('created_at');
-                break;
-        }
-        
-        // Get total records for pagination
-        $totalRecords = $query->count();
-        $totalPages = ceil($totalRecords / $perPage);
-        
-        // Get paginated results
-        $searches = $query->skip(($page - 1) * $perPage)
-                          ->take($perPage)
-                          ->get();
-        
-        // Get stats
-        $stats = \App\Models\Search::getStats();
-        
-        // Get popular terms
-        $popularTerms = \App\Models\Search::getPopularTerms();
-        
-        // Get distinct categories
-        $categories = \App\Models\Search::distinct('category')->whereNotNull('category')->pluck('category');
-        
-        return response()->json([
-            'searches' => $searches,
-            'pagination' => [
-                'current_page' => (int) $page,
-                'total_pages' => $totalPages,
-                'total_records' => $totalRecords,
-                'per_page' => $perPage
-            ],
-            'stats' => $stats,
-            'popular_terms' => $popularTerms,
-            'categories' => $categories
-        ]);
     }
 
     public function updateExercise(Request $request, Exercise $exercise)
     {
+        Log::info('updateExercise START', [
+            'exercise_id' => $exercise->id,
+            'incoming_fields' => $request->except(['new_images']),
+            'has_new_images' => $request->hasFile('new_images'),
+            'new_images_count' => $request->file('new_images') ? count($request->file('new_images')) : 0,
+            'delete_images' => $request->input('delete_images', []),
+            'image_order_raw' => $request->input('image_order')
+        ]);
+
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
@@ -533,83 +441,82 @@ class AdminController extends Controller
             'equipment' => 'nullable|string',
             'muscle_group' => 'nullable|string',
             'intensity' => 'nullable|string',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'delete_images' => 'nullable|array',
-            'delete_images.*' => 'nullable|integer'
+            'new_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'delete_images' => 'array',
+            'delete_images.*' => 'integer|exists:exercise_images,id',
+            'image_order' => 'nullable|string'
         ]);
 
-        $exercise->fill($request->only(['name','description','category','difficulty','duration','calories_burned','equipment','muscle_group','intensity']));
+        $exercise->fill($request->only([
+            'name','description','category','difficulty','duration','calories_burned','equipment','muscle_group','intensity'
+        ]));
+        $exercise->save();
 
-        // Procesar eliminación de imágenes si se solicita
-        if ($request->has('delete_images') && is_array($request->delete_images)) {
-            foreach ($request->delete_images as $imageId) {
-                $image = ExerciseImage::find($imageId);
-                if ($image && $image->exercise_id == $exercise->id) {
-                    try {
-                        // Eliminar el archivo físico
-                        @unlink(public_path('storage/exercises/' . $image->path));
-                        // Eliminar el registro
-                        $image->delete();
-                    } catch (\Exception $e) {
-                        Log::error('Error eliminando imagen ejercicio: ' . $e->getMessage());
-                    }
-                }
+        // Delete images
+        $deleteIds = $request->input('delete_images', []);
+        if (!empty($deleteIds)) {
+            $imagesToDelete = ExerciseImage::whereIn('id', $deleteIds)->where('exercise_id',$exercise->id)->get();
+            $deletedPaths = [];
+            foreach ($imagesToDelete as $img) {
+                Storage::disk('public')->delete('exercises/' . $img->path);
+                $deletedPaths[] = $img->path;
+                $img->delete();
             }
-            
-            // Reordenar posiciones
-            $remaining = ExerciseImage::where('exercise_id', $exercise->id)
-                ->orderBy('position')
-                ->get();
-                
-            foreach ($remaining as $i => $img) {
-                $img->update(['position' => $i]);
-            }
-            
-            // Actualizar la imagen principal
-            $firstImage = ExerciseImage::where('exercise_id', $exercise->id)
-                ->orderBy('position')
-                ->first();
-                
-            $exercise->image_url = $firstImage ? $firstImage->path : null;
         }
 
-        // Agregar nuevas imágenes
-        if ($request->hasFile('images')) {
-            $lastPosition = ExerciseImage::where('exercise_id', $exercise->id)
-                ->max('position') ?? -1;
-                
-            foreach ($request->file('images') as $index => $image) {
+        // Add new images
+        if ($request->hasFile('new_images')) {
+            if (!Storage::disk('public')->exists('exercises')) {
+                Storage::disk('public')->makeDirectory('exercises');
+            }
+            $currentMax = (int) ExerciseImage::where('exercise_id',$exercise->id)->max('position');
+            foreach ($request->file('new_images') as $index => $image) {
                 try {
-                    $position = $lastPosition + $index + 1;
-                    $filename = 'exercise_' . $exercise->id . '_' . time() . '_' . $position . '.' . $image->getClientOriginalExtension();
-                    
-                    $publicStoragePath = public_path('storage/exercises');
-                    if (!File::exists($publicStoragePath)) { 
-                        File::makeDirectory($publicStoragePath, 0755, true); 
-                    }
-                    
-                    $image->move($publicStoragePath, $filename);
-                    chmod($publicStoragePath . '/' . $filename, 0644);
-                    
-                    // Crear entrada en la tabla de imágenes
-                    ExerciseImage::create([
+                    $ext = strtolower($image->getClientOriginalExtension() ?: 'jpg');
+                    $filename = 'exercise_' . $exercise->id . '_' . time() . '_' . $index . '.' . $ext;
+                    Storage::disk('public')->putFileAs('exercises', $image, $filename);
+                    $new = ExerciseImage::create([
                         'exercise_id' => $exercise->id,
                         'path' => $filename,
-                        'position' => $position,
+                        'position' => ++$currentMax,
                     ]);
-                    
-                    // Si no hay imagen principal, establecer esta
-                    if (!$exercise->image_url) {
-                        $exercise->image_url = $filename;
-                    }
-                    
+                    if (!$exercise->image_url) { $exercise->image_url = $filename; $exercise->save(); }
                 } catch (\Exception $e) {
-                    Log::error('Error agregando imagen ejercicio: ' . $e->getMessage());
+                    Log::error('updateExercise add image error', [ 'exercise_id' => $exercise->id, 'msg' => $e->getMessage() ]);
                 }
             }
         }
-        $exercise->save();
-        $exercise->image_path = $exercise->getImagePath();
-        return response()->json(['message' => 'Ejercicio actualizado', 'exercise' => $exercise]);
+
+        // Reorder
+        if ($request->filled('image_order')) {
+            $orderIds = array_filter(explode(',', $request->input('image_order')));
+            foreach ($orderIds as $pos => $id) {
+                ExerciseImage::where('id',$id)->where('exercise_id',$exercise->id)->update(['position' => $pos]);
+            }
+            $first = ExerciseImage::where('exercise_id',$exercise->id)->orderBy('position')->first();
+            if ($first) { $exercise->image_url = $first->path; $exercise->save(); }
+        }
+
+        $finalImages = ExerciseImage::where('exercise_id',$exercise->id)->orderBy('position')->pluck('path');
+        
+        return response()->json(['message' => 'Ejercicio actualizado','exercise' => $exercise->load('images')]);
+    }
+
+    public function destroyExercise(Exercise $exercise)
+    {
+        try {
+            foreach ($exercise->images as $img) {
+                Storage::delete('public/exercises/' . $img->path);
+                $img->delete();
+            }
+            if ($exercise->image_url) {
+                Storage::delete('public/exercises/' . $exercise->image_url);
+            }
+            $exercise->delete();
+            return redirect()->back()->with('success', 'Ejercicio eliminado');
+        } catch (\Exception $e) {
+            Log::error('Error eliminando ejercicio: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'No se pudo eliminar el ejercicio');
+        }
     }
 }

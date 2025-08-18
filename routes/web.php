@@ -38,6 +38,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('exercises/{exercise}', [AdminController::class, 'updateExercise'])->name('exercises.update');
         Route::post('exercises/{exercise}', [AdminController::class, 'updateExercise']);
         Route::delete('exercise-images/{image}', [AdminController::class, 'destroyExerciseImage'])->name('exercises.images.destroy');
+        Route::delete('exercises/{exercise}', [AdminController::class, 'destroyExercise'])->name('exercises.destroy');
         
         // Analytics
         Route::get('api/searches', [AdminController::class, 'apiSearches'])->name('api.searches');

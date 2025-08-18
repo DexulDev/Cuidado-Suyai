@@ -20,10 +20,16 @@
               <h5 class="card-title">{{ exercise.name }}</h5>
               <p class="card-text">{{ exercise.description }}</p>
               <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge bg-info me-1">{{ exercise.muscle_group }}</span>
+                <span class="badge bg-info me-1" v-if="exercise.muscle_group">{{ exercise.muscle_group }}</span>
                 <span class="badge" :class="getDifficultyBadgeClass(exercise.difficulty)">
                   {{ exercise.difficulty }}
                 </span>
+              </div>
+              <div v-if="exercise.images && exercise.images.length" class="d-flex flex-wrap gap-2 mt-2">
+                <img v-for="img in exercise.images.slice(0,4)" :key="img.id" :src="`/storage/exercises/${img.path}`" style="width:60px;height:60px;object-fit:cover;border-radius:6px;" :alt="exercise.name">
+                <div v-if="exercise.images.length>4" class="d-flex align-items-center justify-content-center rounded" style="width:60px;height:60px;background:rgba(0,0,0,.05);font-size:.8rem;">
+                  +{{ exercise.images.length-4 }}
+                </div>
               </div>
             </div>
             <div class="col-md-4">
