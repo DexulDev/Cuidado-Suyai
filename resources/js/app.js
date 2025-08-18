@@ -55,7 +55,6 @@ app.directive('lazy', {
 });
 
 // Registro de componentes globales
-app.component('exercise-list', ExerciseList);
 app.component('exercise-search', ExerciseSearch);
 app.component('food-list', FoodList);
 app.component('food-search', FoodSearch);

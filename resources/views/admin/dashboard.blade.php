@@ -36,10 +36,3 @@
     ></admin-dashboard>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-    // Script simplificado - El modal ahora es manejado por Vue.js
-    console.log('Dashboard de Admin cargado - Modal de telemetría ahora en Vue.js');
-</script>
-@endpush

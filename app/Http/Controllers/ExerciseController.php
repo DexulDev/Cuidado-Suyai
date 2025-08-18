@@ -67,7 +67,17 @@ class ExerciseController extends Controller
     // Nuevo método show
     public function show(Exercise $exercise)
     {
+        $exercise->load('images');
         $exercise->image_path = $exercise->getImagePath();
+        // Map images with full_url like foods
+        $exercise->images = $exercise->images->map(function($img){
+            return [
+                'id' => $img->id,
+                'path' => $img->path,
+                'position' => $img->position,
+                'full_url' => asset('storage/exercises/' . $img->path)
+            ];
+        });
         return $exercise;
     }
 

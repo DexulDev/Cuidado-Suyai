@@ -11,6 +11,5 @@
 @section('content')
 <div id="app" class="d-flex flex-column gap-4">
     <search-container></search-container>
-    <exercise-list></exercise-list>
 </div>
 @endsection

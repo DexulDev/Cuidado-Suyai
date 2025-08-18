@@ -135,44 +135,47 @@
       
       <div v-else class="row row-cols-1 row-cols-md-2 g-4">
         <div v-for="exercise in exercises" :key="exercise.id" class="col">
-          <div class="card exercise-card h-100" @click="openExercise(exercise.id)" style="cursor: pointer;">
+          <div class="card h-100 recipe-card" @click="openExercise(exercise.id)" style="cursor: pointer;">
             <div class="row g-0 h-100">
-              <div class="col-md-4" v-if="exercise.image_path || exercise.image_url">
-                <div class="exercise-image-container">
-                  <img :src="exercise.image_path || exercise.image_url" 
+              <div class="col-md-4">
+                <div class="recipe-image-container">
+                  <img v-if="exercise.image_path || exercise.image_url"
+                       :src="exercise.image_path || exercise.image_url"
                        :alt="exercise.name"
                        class="img-fluid rounded-start">
+                  <div v-else class="recipe-placeholder">
+                    <i class="bi bi-image"></i>
+                  </div>
                 </div>
               </div>
-              <div :class="(exercise.image_path || exercise.image_url) ? 'col-md-8' : 'col-12'">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="col-md-8">
+                <div class="card-body d-flex flex-column h-100">
+                  <div>
                     <h5 class="card-title">{{ exercise.name }}</h5>
-                    <div>
+                    <div class="recipe-meta mb-2">
                       <span class="badge bg-category me-1" v-if="exercise.muscle_group">{{ exercise.muscle_group }}</span>
-                      <span class="badge" :class="getDifficultyBadgeClass(exercise.difficulty)">
-                        {{ exercise.difficulty }}
-                      </span>
+                      <span class="badge" :class="mapExerciseDifficulty(exercise.difficulty)">{{ exercise.difficulty }}</span>
                     </div>
+                    <p class="card-text small">{{ truncateText(exercise.description, 100) }}</p>
                   </div>
-                  <p class="card-text">{{ truncateText(exercise.description, 120) }}</p>
-                  
-                  <div class="exercise-details mt-auto">
-                    <div class="exercise-detail" v-if="exercise.duration">
-                      <i class="bi bi-stopwatch"></i>
-                      <span>{{ exercise.duration }} min</span>
-                    </div>
-                    <div class="exercise-detail" v-if="exercise.intensity">
-                      <i class="bi bi-lightning-charge"></i>
-                      <span>{{ exercise.intensity }}</span>
-                    </div>
-                    <div class="exercise-detail" v-if="exercise.calories_burned">
-                      <i class="bi bi-fire"></i>
-                      <span>~{{ exercise.calories_burned }} cal</span>
-                    </div>
-                    <div class="exercise-detail" v-if="exercise.equipment">
-                      <i class="bi bi-tools"></i>
-                      <span>{{ exercise.equipment }}</span>
+                  <div class="mt-auto">
+                    <div class="nutrition-info">
+                      <div class="nutrition-item" v-if="exercise.duration">
+                        <span class="nutrition-value">{{ exercise.duration }}</span>
+                        <span class="nutrition-label">min</span>
+                      </div>
+                      <div class="nutrition-item" v-if="exercise.intensity">
+                        <span class="nutrition-value">{{ exercise.intensity }}</span>
+                        <span class="nutrition-label">Intens.</span>
+                      </div>
+                      <div class="nutrition-item" v-if="exercise.calories_burned">
+                        <span class="nutrition-value">~{{ exercise.calories_burned }}</span>
+                        <span class="nutrition-label">cal</span>
+                      </div>
+                      <div class="nutrition-item" v-if="exercise.equipment">
+                        <span class="nutrition-value">{{ truncateText(exercise.equipment, 14) }}</span>
+                        <span class="nutrition-label">Equipo</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -185,72 +188,113 @@
       <!-- Modal Detalle usando ModalPortal -->
       <ModalPortal :show="showExerciseModal" @hide="closeExerciseModal" size="xl">
         <template #header>
-          <h4 class="modal-title text-white">{{ selectedExercise?.name }}</h4>
+          <h5 class="modal-title">{{ selectedExercise?.name }}</h5>
         </template>
-        
         <template #body>
-          <div v-if="selectedExercise" class="exercise-modal-content">
-            <!-- Imagen del ejercicio -->
-            <div v-if="selectedExercise.image_path || selectedExercise.image_url" class="text-center mb-4">
-              <img :src="selectedExercise.image_path || selectedExercise.image_url" 
-                   :alt="selectedExercise.name"
-                   class="img-fluid rounded"
-                   style="max-height: 300px; object-fit: cover;">
-            </div>
-
-            <!-- Información básica -->
-            <div class="row mb-4">
-              <div class="col-md-6">
-                <h5 class="text-primary">Información General</h5>
-                <div class="exercise-info">
-                  <div class="info-item" v-if="selectedExercise.muscle_group">
-                    <strong>Grupo Muscular:</strong>
-                    <span class="badge bg-category ms-2">{{ selectedExercise.muscle_group }}</span>
-                  </div>
-                  <div class="info-item" v-if="selectedExercise.difficulty">
-                    <strong>Dificultad:</strong>
-                    <span class="badge ms-2" :class="getDifficultyBadgeClass(selectedExercise.difficulty)">
-                      {{ selectedExercise.difficulty }}
-                    </span>
-                  </div>
-                  <div class="info-item" v-if="selectedExercise.duration">
-                    <strong>Duración:</strong> {{ selectedExercise.duration }} minutos
-                  </div>
-                  <div class="info-item" v-if="selectedExercise.intensity">
-                    <strong>Intensidad:</strong> {{ selectedExercise.intensity }}
-                  </div>
-                  <div class="info-item" v-if="selectedExercise.calories_burned">
-                    <strong>Calorías quemadas:</strong> ~{{ selectedExercise.calories_burned }} cal
-                  </div>
-                  <div class="info-item" v-if="selectedExercise.equipment">
-                    <strong>Equipamiento:</strong> {{ selectedExercise.equipment }}
-                  </div>
+          <div v-if="selectedExercise">
+            <!-- Carrusel de imágenes (igual a foods) -->
+            <div v-if="selectedExercise.images && selectedExercise.images.length" id="exerciseImagesCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                <div class="carousel-item" :class="{active: idx===0}" v-for="(img, idx) in selectedExercise.images" :key="img.id">
+                  <img :src="img.full_url || img.path || img.url" class="d-block w-100" :alt="selectedExercise.name" style="max-height:380px;object-fit:cover;border-radius:8px;">
                 </div>
               </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#exerciseImagesCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#exerciseImagesCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+              </button>
             </div>
 
-            <!-- Descripción completa -->
-            <div class="mb-4">
-              <h5 class="text-primary">Descripción</h5>
-              <p class="exercise-description">{{ selectedExercise.description }}</p>
-            </div>
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <!-- Badges -->
+                <div class="modal-badges d-flex flex-wrap gap-2 mb-3">
+                  <span class="badge-pill" :class="getDifficultyBadgeClass(selectedExercise.difficulty)">
+                    {{ selectedExercise.difficulty }}
+                  </span>
+                  <span class="badge-pill badge-primary" v-if="selectedExercise.duration">
+                    <i class="bi bi-clock me-1"></i>{{ selectedExercise.duration }} min
+                  </span>
+                  <span class="badge-pill badge-info" v-if="selectedExercise.intensity">
+                    <i class="bi bi-lightning-charge me-1"></i>{{ selectedExercise.intensity }}
+                  </span>
+                  <span class="badge-pill badge-secondary" v-if="selectedExercise.muscle_group">
+                    <i class="bi bi-person-bounding-box me-1"></i>{{ selectedExercise.muscle_group }}
+                  </span>
+                </div>
 
-            <!-- Instrucciones -->
-            <div v-if="selectedExercise.instructions" class="mb-4">
-              <h5 class="text-primary">Instrucciones</h5>
-              <div class="exercise-instructions">{{ selectedExercise.instructions }}</div>
-            </div>
+                <!-- Descripción -->
+                <div class="recipe-description mb-4 surface-blur p-3 rounded" v-if="selectedExercise.description">
+                  <p>{{ selectedExercise.description }}</p>
+                </div>
 
-            <!-- Beneficios -->
-            <div v-if="selectedExercise.benefits" class="mb-4">
-              <h5 class="text-primary">Beneficios</h5>
-              <p class="exercise-benefits">{{ selectedExercise.benefits }}</p>
-            </div>
+                <!-- Grid de métricas (análoga a nutrición) -->
+                <div class="nutrition-card surface-blur p-4 mb-4 rounded" v-if="anyMetric">
+                  <h6 class="fw-bold mb-3">Detalles del Ejercicio</h6>
+                  <div class="nutrition-grid">
+                    <div class="nutrition-item-large" v-if="selectedExercise.calories_burned">
+                      <div class="nutrition-icon"><i class="bi bi-fire"></i></div>
+                      <div class="nutrition-details">
+                        <div class="nutrition-value-large">~{{ selectedExercise.calories_burned }}</div>
+                        <div class="nutrition-label-large">Calorías</div>
+                      </div>
+                    </div>
+                    <div class="nutrition-item-large" v-if="selectedExercise.equipment">
+                      <div class="nutrition-icon"><i class="bi bi-tools"></i></div>
+                      <div class="nutrition-details">
+                        <div class="nutrition-value-large">{{ selectedExercise.equipment }}</div>
+                        <div class="nutrition-label-large">Equipo</div>
+                      </div>
+                    </div>
+                    <div class="nutrition-item-large" v-if="selectedExercise.muscle_group">
+                      <div class="nutrition-icon"><i class="bi bi-person"></i></div>
+                      <div class="nutrition-details">
+                        <div class="nutrition-value-large text-capitalize">{{ selectedExercise.muscle_group }}</div>
+                        <div class="nutrition-label-large">Músculo</div>
+                      </div>
+                    </div>
+                    <div class="nutrition-item-large" v-if="selectedExercise.intensity">
+                      <div class="nutrition-icon"><i class="bi bi-lightning"></i></div>
+                      <div class="nutrition-details">
+                        <div class="nutrition-value-large">{{ selectedExercise.intensity }}</div>
+                        <div class="nutrition-label-large">Intensidad</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            <!-- Precauciones -->
-            <div v-if="selectedExercise.precautions" class="mb-4">
-              <h5 class="text-warning">Precauciones</h5>
-              <p class="exercise-precautions">{{ selectedExercise.precautions }}</p>
+                <!-- Instrucciones -->
+                <div v-if="selectedExercise.instructions" class="preparation-section surface-blur p-4 rounded mb-4">
+                  <h6 class="recipe-section-title"><i class="bi bi-journal-text me-2"></i>Instrucciones</h6>
+                  <div class="section-divider mb-3" style="width:50px;margin-top:.5rem;"></div>
+                  <ol class="preparation-list">
+                    <li v-for="(line, idx) in splitLines(selectedExercise.instructions)" :key="idx" class="preparation-step">{{ line }}</li>
+                  </ol>
+                </div>
+
+                <!-- Beneficios -->
+                <div v-if="selectedExercise.benefits" class="ingredients-section surface-blur p-4 rounded mb-4">
+                  <h6 class="recipe-section-title"><i class="bi bi-heart-pulse me-2"></i>Beneficios</h6>
+                  <div class="section-divider mb-3" style="width:50px;margin-top:.5rem;"></div>
+                  <ul class="ingredients-list">
+                    <li v-for="(line, idx) in splitLines(selectedExercise.benefits)" :key="idx" class="ingredient-item">{{ line }}</li>
+                  </ul>
+                </div>
+
+                <!-- Precauciones -->
+                <div v-if="selectedExercise.precautions" class="preparation-section surface-blur p-4 rounded">
+                  <h6 class="recipe-section-title"><i class="bi bi-exclamation-triangle me-2"></i>Precauciones</h6>
+                  <div class="section-divider mb-3" style="width:50px;margin-top:.5rem;"></div>
+                  <ul class="ingredients-list">
+                    <li v-for="(line, idx) in splitLines(selectedExercise.precautions)" :key="idx" class="ingredient-item">{{ line }}</li>
+                  </ul>
+                </div>
+
+              </div>
             </div>
           </div>
         </template>
@@ -262,24 +306,16 @@
 <script>
 import axios from 'axios';
 import ModalPortal from '../ui/ModalPortal.vue';
-
 export default {
-  name: 'ExerciseSearch',
-  components: {
-    ModalPortal
+  name:'ExerciseSearch', components:{ ModalPortal },
+  data(){ return { searchQuery:'', selectedMuscleGroup:'', exercises:[], loading:false, selectedExercise:null, showExerciseModal:false, hasSearched:false }; },
+  computed:{
+    anyMetric(){
+      const e = this.selectedExercise || {}; 
+      return e.calories_burned || e.equipment || e.muscle_group || e.intensity;
+    }
   },
-  data() {
-    return {
-      searchQuery: '',
-      selectedMuscleGroup: '',
-      exercises: [],
-      loading: false,
-      selectedExercise: null,
-      showExerciseModal: false,
-      hasSearched: false
-    };
-  },
-  methods: {
+  methods:{
     searchExercises() {
       this.loading = true;
       this.hasSearched = true;
@@ -311,13 +347,6 @@ export default {
         default: return 'bg-secondary';
       }
     },
-    openExercise(exerciseId) {
-      // Buscar el ejercicio en los resultados actuales
-      this.selectedExercise = this.exercises.find(ex => ex.id === exerciseId);
-      if (this.selectedExercise) {
-        this.showExerciseModal = true;
-      }
-    },
     closeExerciseModal() {
       this.showExerciseModal = false;
     },
@@ -325,12 +354,34 @@ export default {
       this.selectedMuscleGroup = muscleGroup;
       this.searchQuery = '';
       this.searchExercises();
-    }
-  },
-  mounted() {
-    // No hacer búsqueda automática, mostrar recomendaciones
+    },
+    async openExercise(id){
+      try {
+        this.loadingDetail = true;
+        const { data } = await axios.get(`/api/exercises/${id}`);
+        // Normalizar imágenes (por si backend aún no incluye full_url)
+        if(Array.isArray(data.images)){
+          data.images = data.images.map(img => ({
+            ...img,
+            full_url: img.full_url || (img.path ? `/storage/exercises/${img.path}` : img.url || '')
+          })).sort((a,b)=> (a.position??0)-(b.position??0));
+        }
+        this.selectedExercise = data;
+        this.showExerciseModal = true;
+      } catch(e){ console.error('Error cargando ejercicio', e); }
+      finally { this.loadingDetail = false; }
+    },
+    splitLines(text){ if(!text) return []; return text.split('\n').map(l=>l.trim()).filter(Boolean); },
+    mapExerciseDifficulty(diff){
+      if(!diff) return 'badge-secondary';
+      const d = diff.toLowerCase();
+      if(d==='principiante') return 'badge-success';
+      if(d==='intermedio') return 'badge-warning';
+      if(d==='avanzado') return 'badge-danger';
+      return 'badge-secondary';
+    },
   }
-}
+};
 </script>
 
 <style scoped>
@@ -347,6 +398,7 @@ export default {
 .exercise-search.card {
   background-color: #f8f9fa !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: none;
 }
 
 .card {
@@ -388,6 +440,13 @@ export default {
   background-color: var(--cn-accent);
   color: var(--cn-dark);
 }
+
+/* Añadir estilos de badges coherentes con FoodSearch */
+.badge-success{ background-color:#28a745; color:#fff; }
+.badge-warning{ background-color:#ffc107; color:#212529; }
+.badge-danger{ background-color:#dc3545; color:#fff; }
+.badge-secondary{ background-color:#6c757d; color:#fff; }
+.badge-primary{ background-color:var(--cn-primary); color:#fff; }
 
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.5s;
@@ -432,10 +491,6 @@ export default {
   color: var(--cn-primary) !important;
 }
 
-h5.card-title {
-  color: var(--cn-primary);
-}
-
 .exercise-image-container {
   height: 200px;
   display: flex;
@@ -451,120 +506,46 @@ h5.card-title {
   object-fit: cover;
 }
 
-/* Estilos del modal */
-.exercise-modal-content {
-  font-family: 'Inter', sans-serif;
-}
+/***** Reuso de estilos de FoodSearch para consistencia *****/
+.modal-badges .badge-pill{ padding:.4rem .8rem; border-radius:20px; font-size:.75rem; font-weight:500; }
+.badge-pill.badge-primary{ background: var(--cn-primary); color:#fff; }
+.badge-pill.badge-info{ background: #17a2b8; color:#fff; }
+.badge-pill.badge-secondary{ background:#6c757d; color:#fff; }
+.recipe-description p{ margin:0; line-height:1.55; }
+.nutrition-card{ background:rgba(255,255,255,.95); }
+.nutrition-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; }
+.nutrition-item-large{ display:flex; align-items:center; gap:1rem; padding:1rem; background:#f8f9fa; border-radius:8px; }
+.nutrition-icon{ font-size:1.5rem; color:var(--cn-primary); }
+.nutrition-value-large{ font-size:1.25rem; font-weight:600; color:var(--cn-primary); }
+.nutrition-label-large{ font-size:.875rem; color:#6c757d; }
+.recipe-section-title{ font-size:1.1rem; font-weight:600; color:var(--cn-primary); margin-bottom:.5rem; }
+.section-divider{ height:3px; background:linear-gradient(90deg,var(--cn-primary) 0%, var(--cn-accent) 100%); border-radius:2px; }
+.ingredients-list, .preparation-list{ margin:0; padding-left:1.5rem; }
+.ingredient-item, .preparation-step{ margin-bottom:.5rem; line-height:1.6; }
+.surface-blur{ background:rgba(255,255,255,.95); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.3); }
 
-.exercise-info .info-item {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.exercise-info .info-item:last-child {
-  border-bottom: none;
-}
-
-.exercise-description {
-  line-height: 1.6;
-  color: #555;
-}
-
-.exercise-instructions {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid var(--cn-primary);
-  white-space: pre-line;
-}
-
-.exercise-benefits {
-  background: #e8f5e8;
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid #28a745;
-}
-
-.exercise-precautions {
-  background: #fff3cd;
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid #ffc107;
-  color: #856404;
-}
-
-/* Estilos para las recomendaciones */
-.welcome-section {
-  padding: 2rem;
-}
-
-.welcome-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, var(--cn-primary), var(--cn-secondary));
-  border-radius: 50%;
-  color: white;
-  font-size: 2rem;
-  margin: 0 auto;
-}
-
-.welcome-title {
-  color: var(--cn-dark);
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.welcome-description {
-  color: #6c757d;
-  margin-bottom: 2rem;
-}
-
-.recommendations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.recommendation-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.5rem 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(139, 0, 0, 0.1);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.recommendation-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--cn-primary);
-  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.15);
-}
-
-.recommendation-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, var(--cn-primary), var(--cn-secondary));
-  border-radius: 50%;
-  color: white;
-  font-size: 1.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.recommendation-label {
-  color: var(--cn-dark);
-  font-weight: 500;
-  font-size: 0.95rem;
-}
+/* Copia de estilos clave de FoodSearch para unificación visual */
+.recipe-card{ transition:all .3s ease; border:none; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:1.5rem; overflow:hidden; }
+.recipe-card:hover{ transform:translateY(-5px); box-shadow:0 8px 15px rgba(0,0,0,.1); }
+.recipe-image-container{ height:200px; display:flex; align-items:center; justify-content:center; background:var(--cn-light); overflow:hidden; }
+.recipe-image-container img{ width:100%; height:100%; object-fit:cover; }
+.recipe-placeholder{ font-size:3rem; color:#d3c7a7; }
+.recipe-meta{ display:flex; gap:15px; flex-wrap:wrap; }
+.recipe-meta-item{ display:flex; align-items:center; gap:4px; font-size:.85rem; color:var(--cn-dark); }
+.recipe-meta-item i{ font-size:.9rem; color:var(--cn-secondary); }
+.nutrition-info{ display:flex; flex-wrap:wrap; gap:10px; margin-top:1rem; }
+.nutrition-item{ display:flex; flex-direction:column; align-items:center; background:var(--cn-light); padding:8px 12px; border-radius:8px; min-width:70px; }
+.nutrition-value{ font-weight:600; color:var(--cn-secondary); }
+.nutrition-label{ font-size:.75rem; color:var(--cn-dark); }
+/* Recomendaciones / bienvenida (mismos estilos que FoodSearch) */
+.welcome-section{ padding:2rem; }
+.welcome-icon{ display:inline-flex; align-items:center; justify-content:center; width:80px; height:80px; background:linear-gradient(135deg,var(--cn-primary),var(--cn-secondary)); border-radius:50%; color:#fff; font-size:2rem; margin:0 auto; }
+.welcome-title{ color:var(--cn-dark); font-weight:600; margin-bottom:.5rem; }
+.welcome-description{ color:#6c757d; margin-bottom:2rem; }
+.recommendations-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; max-width:600px; margin:0 auto; }
+.recommendation-card{ display:flex; flex-direction:column; align-items:center; padding:1.5rem 1rem; background:rgba(255,255,255,.9); border:2px solid rgba(139,0,0,.1); border-radius:12px; cursor:pointer; transition:all .3s ease; }
+.recommendation-card:hover{ transform:translateY(-5px); border-color:var(--cn-primary); box-shadow:0 8px 25px rgba(139,0,0,.15); }
+.recommendation-icon{ display:flex; align-items:center; justify-content:center; width:50px; height:50px; background:linear-gradient(135deg,var(--cn-primary),var(--cn-secondary)); border-radius:50%; color:#fff; font-size:1.5rem; margin-bottom:.75rem; }
+.recommendation-label{ color:var(--cn-dark); font-weight:500; font-size:.95rem; }
+/* Badge pill mapping reuse already present from existing code */
 </style>

@@ -255,14 +255,6 @@ class AdminController extends Controller
 
     public function updateFood(Request $request, Food $food)
     {
-        // Debug: Log de información de la request
-        Log::info('updateFood called', [
-            'food_id' => $food->id,
-            'has_new_images' => $request->hasFile('new_images'),
-            'new_images_count' => $request->file('new_images') ? count($request->file('new_images')) : 0,
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size')
-        ]);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -359,12 +351,6 @@ class AdminController extends Controller
 
     public function storeExercise(Request $request)
     {
-        Log::info('storeExercise init', [
-            'all_files_keys' => array_keys($request->allFiles()),
-            'has_images' => $request->hasFile('images'),
-            'upload_max_filesize' => ini_get('upload_max_filesize'),
-            'post_max_size' => ini_get('post_max_size'),
-        ]);
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -416,20 +402,11 @@ class AdminController extends Controller
             }
             $exercise->save();
         }
-        Log::info('storeExercise end', [ 'exercise_id' => $exercise->id, 'images_count' => $exercise->images()->count() ]);
         return redirect()->route('admin.dashboard')->with('success', 'Ejercicio agregado correctamente');
     }
 
     public function updateExercise(Request $request, Exercise $exercise)
     {
-        Log::info('updateExercise START', [
-            'exercise_id' => $exercise->id,
-            'incoming_fields' => $request->except(['new_images']),
-            'has_new_images' => $request->hasFile('new_images'),
-            'new_images_count' => $request->file('new_images') ? count($request->file('new_images')) : 0,
-            'delete_images' => $request->input('delete_images', []),
-            'image_order_raw' => $request->input('image_order')
-        ]);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
