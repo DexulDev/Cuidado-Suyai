@@ -158,27 +158,118 @@ class AdminController extends Controller
         ));
     }
     
-    public function searchAnalytics()
+    public function searchAnalytics(Request $request)
     {
-        $searches = \App\Models\Search::orderBy('created_at', 'desc')
-            ->paginate(50);
+        try {
+            // Construir query base
+            $query = \App\Models\Search::query();
             
-        $stats = [
-            'total' => \App\Models\Search::count(),
-            'food' => \App\Models\Search::foodSearches()->count(),
-            'exercise' => \App\Models\Search::exerciseSearches()->count(),
-            'popular_terms' => \App\Models\Search::getPopularTerms(null, 10),
-            'today' => \App\Models\Search::whereDate('created_at', today())->count()
-        ];
-        
-        if (request()->wantsJson()) {
+            // Aplicar filtros
+            if ($request->filled('searchType')) {
+                $query->where('search_type', $request->searchType);
+            }
+            
+            if ($request->filled('category')) {
+                $query->where('category', $request->category);
+            }
+            
+            // Filtro de período
+            if ($request->filled('period')) {
+                switch ($request->period) {
+                    case 'today':
+                        $query->whereDate('created_at', today());
+                        break;
+                    case 'week':
+                        $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+                        break;
+                    case 'month':
+                        $query->whereMonth('created_at', now()->month)
+                              ->whereYear('created_at', now()->year);
+                        break;
+                }
+            }
+            
+            // Ordenamiento
+            switch ($request->get('sort', 'newest')) {
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                case 'popular':
+                    $query->orderBy('results_count', 'desc');
+                    break;
+                default: // newest
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
+            
+            // Paginación
+            $perPage = 20;
+            $searches = $query->paginate($perPage);
+            
+            // Estadísticas generales
+            $totalSearches = \App\Models\Search::count();
+            $searchesToday = \App\Models\Search::whereDate('created_at', today())->count();
+            $uniqueTerms = \App\Models\Search::whereNotNull('query')
+                ->where('query', '!=', '')
+                ->distinct('query')
+                ->count();
+            $avgResults = \App\Models\Search::avg('results_count') ?? 0;
+            
+            $stats = [
+                'total_searches' => $totalSearches,
+                'searches_today' => $searchesToday,
+                'unique_terms' => $uniqueTerms,
+                'avg_results' => round($avgResults, 1),
+                'food_searches' => \App\Models\Search::foodSearches()->count(),
+                'exercise_searches' => \App\Models\Search::exerciseSearches()->count(),
+            ];
+            
+            // Términos populares
+            $popularTermsQuery = \App\Models\Search::whereNotNull('query')
+                ->where('query', '!=', '');
+                
+            if ($request->filled('chartView') && $request->chartView !== 'all') {
+                $popularTermsQuery->where('search_type', $request->chartView);
+            }
+            
+            $popularTerms = $popularTermsQuery
+                ->selectRaw('query, COUNT(*) as count')
+                ->groupBy('query')
+                ->orderBy('count', 'desc')
+                ->limit(12)
+                ->get();
+            
+            // Categorías disponibles
+            $categories = \App\Models\Search::whereNotNull('category')
+                ->where('category', '!=', '')
+                ->distinct('category')
+                ->pluck('category')
+                ->toArray();
+            
             return response()->json([
-                'searches' => $searches,
-                'stats' => $stats
+                'searches' => $searches->items(),
+                'pagination' => [
+                    'current_page' => $searches->currentPage(),
+                    'total_pages' => $searches->lastPage(),
+                    'total_records' => $searches->total(),
+                    'per_page' => $searches->perPage()
+                ],
+                'stats' => $stats,
+                'popular_terms' => $popularTerms,
+                'categories' => $categories
             ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error en searchAnalytics: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            
+            return response()->json([
+                'error' => 'Error interno del servidor',
+                'message' => 'No se pudieron cargar las estadísticas de búsqueda'
+            ], 500);
         }
-        
-        return view('admin.search-analytics', compact('searches', 'stats'));
     }
 
     public function logout()

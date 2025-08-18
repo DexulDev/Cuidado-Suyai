@@ -41,6 +41,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('exercises/{exercise}', [AdminController::class, 'destroyExercise'])->name('exercises.destroy');
         
         // Analytics
-        Route::get('api/searches', [AdminController::class, 'apiSearches'])->name('api.searches');
+        Route::get('api/searches', [AdminController::class, 'searchAnalytics'])->name('api.searches');
     });
 });
