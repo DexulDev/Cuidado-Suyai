@@ -18,7 +18,7 @@ Route::get('/foods/{food}', [FoodController::class, 'show']);
 Route::get('/exercises/{exercise}', [ExerciseController::class, 'show']);
 
 // Search logging and analytics
-Route::post('/log-search', function(Request $request) {
+Route::post('/searches', function(Request $request) {
     try {
         $data = $request->validate([
             'search_type' => 'required|string|in:food,exercise',

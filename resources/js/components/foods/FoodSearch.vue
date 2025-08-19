@@ -16,7 +16,7 @@
           </div>
         </div>
         <div class="col-md-4">
-          <select class="form-select" v-model="selectedCategory" @change="searchFoods">
+          <select class="form-select" v-model="selectedCategory" @change="onCategoryChange">
             <option value="">Todas las categorías</option>
             <option value="desayuno">Desayuno</option>
             <option value="almuerzo">Almuerzo</option>
@@ -310,7 +310,9 @@ export default {
       loading: false,
       activeFood: null,
       showFoodModal: false,
-      hasSearched: false
+      hasSearched: false,
+      lastLoggedSearch: null, // Para evitar logs duplicados
+      programmaticChange: false // Bandera para evitar búsquedas duplicadas
     };
   },
   methods: {
@@ -329,8 +331,9 @@ export default {
         this.foods = response.data;
         this.loading = false;
         
-        // Registrar búsqueda para telemetría SOLO cuando se hace una búsqueda real
-        if (this.searchQuery && this.searchQuery.trim().length > 0) {
+        // Registrar búsqueda para telemetría solo si es una búsqueda con texto válido
+        // y es diferente a la última búsqueda registrada
+        if (this.shouldLogSearch()) {
           this.logSearch();
         }
       } catch (error) {
@@ -359,9 +362,18 @@ export default {
     },
 
     searchByCategory(category) {
+      this.programmaticChange = true; // Marcar que es un cambio programático
       this.selectedCategory = category;
       this.searchQuery = '';
       this.searchFoods();
+    },
+
+    onCategoryChange() {
+      // Solo ejecutar si no es un cambio programático
+      if (!this.programmaticChange) {
+        this.searchFoods();
+      }
+      this.programmaticChange = false; // Resetear la bandera
     },
 
     getDifficultyBadgeClass(difficulty) {
@@ -382,15 +394,45 @@ export default {
       if (!this.searchQuery || this.searchQuery.trim().length === 0) return;
       
       try {
-        await axios.post('/api/searches', {
+        const searchData = {
           query: this.searchQuery.trim(),
           search_type: 'food',
           category: this.selectedCategory || null,
           results_count: this.foods.length
-        });
+        };
+
+        // Actualizar el último log registrado
+        this.lastLoggedSearch = {
+          query: searchData.query,
+          category: searchData.category
+        };
+
+        await axios.post('/api/searches', searchData);
       } catch (error) {
         console.error('Error al registrar búsqueda:', error);
       }
+    },
+
+    shouldLogSearch() {
+      // Solo registrar si hay una query con texto válido
+      if (!this.searchQuery || this.searchQuery.trim().length < 2) {
+        return false;
+      }
+
+      // No registrar si es exactamente la misma búsqueda que la anterior
+      if (this.lastLoggedSearch) {
+        const currentSearch = {
+          query: this.searchQuery.trim(),
+          category: this.selectedCategory || null
+        };
+
+        if (this.lastLoggedSearch.query === currentSearch.query && 
+            this.lastLoggedSearch.category === currentSearch.category) {
+          return false;
+        }
+      }
+
+      return true;
     }
   },
   mounted() {

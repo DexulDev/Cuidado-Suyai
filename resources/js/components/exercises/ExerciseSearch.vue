@@ -13,17 +13,17 @@
             >
         </div>
       </div>
-      <div class="col-md-4">
-        <select class="form-select" v-model="selectedMuscleGroup" @change="searchExercises">
-          <option value="">Todos los grupos musculares</option>
-          <option value="piernas">Piernas</option>
-          <option value="brazos">Brazos</option>
-          <option value="pecho">Pecho</option>
-          <option value="espalda">Espalda</option>
-          <option value="abdomen">Abdomen</option>
-          <option value="todo el cuerpo">Todo el cuerpo</option>
-        </select>
-      </div>
+              <div class="col-md-4">
+          <select class="form-select" v-model="selectedMuscleGroup" @change="onMuscleGroupChange">
+            <option value="">Todos los grupos musculares</option>
+            <option value="piernas">Piernas</option>
+            <option value="brazos">Brazos</option>
+            <option value="pecho">Pecho</option>
+            <option value="espalda">Espalda</option>
+            <option value="abdomen">Abdomen</option>
+            <option value="todo el cuerpo">Todo el cuerpo</option>
+          </select>
+        </div>
       <div class="col-12">
         <button @click="searchExercises" class="btn btn-primary">
           <i class="bi bi-search me-2"></i>Buscar
@@ -310,7 +310,7 @@ import axios from 'axios';
 import ModalPortal from '../ui/ModalPortal.vue';
 export default {
   name:'ExerciseSearch', components:{ ModalPortal },
-  data(){ return { searchQuery:'', selectedMuscleGroup:'', exercises:[], loading:false, selectedExercise:null, showExerciseModal:false, hasSearched:false }; },
+  data(){ return { searchQuery:'', selectedMuscleGroup:'', exercises:[], loading:false, selectedExercise:null, showExerciseModal:false, hasSearched:false, lastLoggedSearch: null, programmaticChange: false }; },
   computed:{
     anyMetric(){
       const e = this.selectedExercise || {}; 
@@ -331,6 +331,12 @@ export default {
       .then(response => {
         this.exercises = response.data;
         this.loading = false;
+        
+        // Registrar búsqueda para telemetría solo si es una búsqueda con texto válido
+        // y es diferente a la última búsqueda registrada
+        if (this.shouldLogSearch()) {
+          this.logSearch();
+        }
       })
       .catch(error => {
         console.error('Error buscando ejercicios:', error);
@@ -353,9 +359,18 @@ export default {
       this.showExerciseModal = false;
     },
     searchByMuscleGroup(muscleGroup) {
+      this.programmaticChange = true; // Marcar que es un cambio programático
       this.selectedMuscleGroup = muscleGroup;
       this.searchQuery = '';
       this.searchExercises();
+    },
+
+    onMuscleGroupChange() {
+      // Solo ejecutar si no es un cambio programático
+      if (!this.programmaticChange) {
+        this.searchExercises();
+      }
+      this.programmaticChange = false; // Resetear la bandera
     },
     async openExercise(id){
       try {
@@ -382,6 +397,51 @@ export default {
       if(d==='avanzado') return 'badge-danger';
       return 'badge-secondary';
     },
+    
+    async logSearch() {
+      if (!this.searchQuery || this.searchQuery.trim().length === 0) return;
+      
+      try {
+        const searchData = {
+          query: this.searchQuery.trim(),
+          search_type: 'exercise',
+          category: this.selectedMuscleGroup || null,
+          results_count: this.exercises.length
+        };
+
+        // Actualizar el último log registrado
+        this.lastLoggedSearch = {
+          query: searchData.query,
+          category: searchData.category
+        };
+
+        await axios.post('/api/searches', searchData);
+      } catch (error) {
+        console.error('Error al registrar búsqueda:', error);
+      }
+    },
+
+    shouldLogSearch() {
+      // Solo registrar si hay una query con texto válido
+      if (!this.searchQuery || this.searchQuery.trim().length < 2) {
+        return false;
+      }
+
+      // No registrar si es exactamente la misma búsqueda que la anterior
+      if (this.lastLoggedSearch) {
+        const currentSearch = {
+          query: this.searchQuery.trim(),
+          category: this.selectedMuscleGroup || null
+        };
+
+        if (this.lastLoggedSearch.query === currentSearch.query && 
+            this.lastLoggedSearch.category === currentSearch.category) {
+          return false;
+        }
+      }
+
+      return true;
+    }
   }
 };
 </script>
